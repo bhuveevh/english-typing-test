@@ -117,10 +117,17 @@
             color: #444;
         }
 
+        /* For handling paragraphs and line breaks in test-area */
+        .paragraph {
+            margin-bottom: 1.5em; /* Space between paragraphs */
+            white-space: pre-wrap; /* Preserves whitespace and wraps text */
+        }
+
         .word {
             display: inline-block;
             margin-right: 5px;
             padding: 1px 0;
+            white-space: pre-wrap; /* Ensure words don't break mid-char for spaces */
         }
 
         .current-word {
@@ -341,6 +348,10 @@
             border: 1px solid #cddc39;
             transform: scale(0.9);
             transition: transform 0.4s ease;
+
+            /* Fix for overflow on settings screen */
+            max-height: 90vh; /* Limit height to 90% of viewport height */
+            overflow-y: auto; /* Enable vertical scrolling if content overflows */
         }
 
         .settings-overlay.show .settings-content {
@@ -563,7 +574,7 @@
                 <textarea id="custom-story-textarea" placeholder="Paste the text you want to type here..."></textarea>
                 <div class="custom-story-controls">
                     <button class="button secondary" id="add-story-link-button">Add Story from Reedsy</button>
-                    </div>
+                </div>
             </div>
 
             <div class="button-group">
@@ -752,6 +763,8 @@
         let currentStoryType = 'random-words'; // Default story type
         let customStoryText = ''; // Stores user's custom story
 
+        let testContentArray = []; // Stores words and newline indicators
+
         // Utility to format time
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
@@ -760,7 +773,9 @@
         }
 
         async function generateAndRenderTestWords() {
-            testWords = [];
+            testWords = []; // Reset words for typing logic
+            testContentArray = []; // Reset full content array
+
             let textToType = "";
 
             if (currentStoryType === 'ai-story') {
@@ -776,62 +791,203 @@
                 textToType = customStoryText.trim();
                 if (textToType === "") {
                     alert("Please paste your custom story in the text area or select another story type.");
-                    // Revert to default or show settings again if custom story is empty
                     settingsOverlay.classList.add('show');
                     mainContent.classList.add('content-hidden');
-                    return;
+                    return; // Stop function execution
                 }
             } else { // random-words
                 textToType = await fetchAIGeneratedStory('random-words');
             }
 
-            // Split by space to get words, then remove any empty strings resulting from multiple spaces
-            testWords = textToType.split(/\s+/).filter(word => word.length > 0); 
+            testArea.innerHTML = ''; // Clear previous content
 
-            testArea.innerHTML = '';
-            testWords.forEach((word, wordIdx) => {
-                const wordSpan = document.createElement('span');
-                wordSpan.classList.add('word');
-                word.split('').forEach(char => {
-                    const charSpan = document.createElement('span');
-                    charSpan.textContent = char;
-                    charSpan.classList.add('untyped');
-                    wordSpan.appendChild(charSpan);
+            // Process text to handle paragraphs and line breaks
+            const paragraphs = textToType.split(/\r?\n/); // Split by newline characters
+
+            paragraphs.forEach((paragraphText, paraIdx) => {
+                const paragraphDiv = document.createElement('div');
+                paragraphDiv.classList.add('paragraph');
+
+                const wordsInParagraph = paragraphText.split(/\s+/).filter(word => word.length > 0);
+
+                wordsInParagraph.forEach((word, wordIdxInPara) => {
+                    // Add word to testContentArray
+                    testContentArray.push(word);
+
+                    const wordSpan = document.createElement('span');
+                    wordSpan.classList.add('word');
+                    word.split('').forEach(char => {
+                        const charSpan = document.createElement('span');
+                        charSpan.textContent = char;
+                        charSpan.classList.add('untyped');
+                        wordSpan.appendChild(charSpan);
+                    });
+
+                    // Add a space span after each word (except the last one in the paragraph)
+                    if (wordIdxInPara < wordsInParagraph.length - 1) {
+                        const spaceSpan = document.createElement('span');
+                        spaceSpan.textContent = ' ';
+                        spaceSpan.classList.add('char-space');
+                        spaceSpan.classList.add('untyped');
+                        wordSpan.appendChild(spaceSpan);
+                    }
+                    paragraphDiv.appendChild(wordSpan);
                 });
-                // Add a space span after each word (except the last one)
-                if (wordIdx < testWords.length - 1) {
-                    const spaceSpan = document.createElement('span');
-                    spaceSpan.textContent = ' ';
-                    spaceSpan.classList.add('char-space'); // Unique class for space char
-                    spaceSpan.classList.add('untyped');
-                    wordSpan.appendChild(spaceSpan);
+
+                // Add a newline indicator if it's not the very last paragraph and there's actually content
+                if (paraIdx < paragraphs.length -1 && paragraphText.length > 0) {
+                     // Only add newline indicator if there's actual content on this line
+                    testContentArray.push('\n'); // Special indicator for newline
                 }
-                testArea.appendChild(wordSpan);
+                
+                testArea.appendChild(paragraphDiv);
             });
+
+            // Flatten testContentArray into testWords for simpler word-by-word tracking
+            // This ensures we can iterate through `testWords` linearly for `wordIndex`
+            // and `testContentArray` represents the display structure.
+            // This can be tricky. Let's make `testWords` represent the actual expected characters for typing.
+            // For custom story with newlines, `testWords` will now contain actual words and '\n' markers.
+
+            // Re-processing testWords to include newline characters for accurate indexing
+            testWords = [];
+            paragraphs.forEach((paragraphText, paraIdx) => {
+                const wordsInParagraph = paragraphText.split(/\s+/).filter(word => word.length > 0);
+                testWords = testWords.concat(wordsInParagraph);
+                if (paraIdx < paragraphs.length -1 && paragraphText.length > 0) {
+                    testWords.push('\n'); // Add newline character as a distinct "word"
+                }
+            });
+
             highlightCurrentWord();
-            adjustTestAreaScroll(); // Adjust scroll initially
-        }
-
-
-        function highlightCurrentWord() {
-            const allWordSpans = testArea.querySelectorAll('.word');
-            allWordSpans.forEach((span, idx) => {
-                if (idx === wordIndex) {
-                    span.classList.add('current-word');
-                } else {
-                    span.classList.remove('current-word');
-                }
-            });
             adjustTestAreaScroll();
         }
 
+        // Helper to get the actual DOM word span based on wordIndex
+        function getDomWordSpan(idx) {
+            let currentDomWordIndex = -1;
+            for (let i = 0; i < testArea.children.length; i++) {
+                const paragraphDiv = testArea.children[i];
+                if (paragraphDiv.classList.contains('paragraph')) {
+                    for (let j = 0; j < paragraphDiv.children.length; j++) {
+                        const wordSpan = paragraphDiv.children[j];
+                        if (wordSpan.classList.contains('word')) {
+                            currentDomWordIndex++;
+                            if (currentDomWordIndex === idx) {
+                                return wordSpan;
+                            }
+                        }
+                    }
+                    // If a newline was present, it also counts as a "word" in testWords
+                    // We need to account for it in the DOM word index too
+                    // This is tricky. A more direct mapping is needed.
+                }
+            }
+            return null;
+        }
+
+        function highlightCurrentWord() {
+            // Remove highlighting from all words first
+            testArea.querySelectorAll('.word').forEach(span => {
+                span.classList.remove('current-word');
+            });
+
+            let currentDomWordSpan = null;
+            let currentTheoreticalWordIndex = 0;
+
+            // Iterate through paragraphs and words to find the correct DOM span
+            for (let i = 0; i < testArea.children.length; i++) {
+                const paragraphDiv = testArea.children[i];
+                if (paragraphDiv.classList.contains('paragraph')) {
+                    for (let j = 0; j < paragraphDiv.children.length; j++) {
+                        const wordSpan = paragraphDiv.children[j];
+                        if (wordSpan.classList.contains('word')) {
+                            if (currentTheoreticalWordIndex === wordIndex) {
+                                currentDomWordSpan = wordSpan;
+                                break; // Found it
+                            }
+                            currentTheoreticalWordIndex++;
+                        }
+                    }
+                }
+                // If the current testWords element is a newline, increment theoretical index
+                if (testWords[currentTheoreticalWordIndex] === '\n') {
+                    // This means we are at the end of a line, expecting an Enter
+                    // The next word in testWords is actually on a new line in the DOM.
+                    // We don't have a direct DOM element for '\n' itself, so this adjustment
+                    // helps `currentTheoreticalWordIndex` stay in sync with `wordIndex`.
+                    // If we just typed a word and are moving to a '\n', we increment theoretical.
+                    if (currentTheoreticalWordIndex === wordIndex) {
+                        break; // Found the newline "word" in testWords, no DOM element for it.
+                    }
+                    currentTheoreticalWordIndex++;
+                }
+                if (currentDomWordSpan) break; // Break outer loop if found
+            }
+
+            if (currentDomWordSpan) {
+                currentDomWordSpan.classList.add('current-word');
+            }
+            adjustTestAreaScroll();
+        }
+
+
         // Function to automatically scroll the test area
         function adjustTestAreaScroll() {
-            const currentWordSpan = testArea.children[wordIndex];
-            if (!currentWordSpan) return;
+            // Find the active paragraph's word
+            let targetWordSpan = null;
+            let currentTheoreticalWordIndex = 0;
+            for (let i = 0; i < testArea.children.length; i++) {
+                const paragraphDiv = testArea.children[i];
+                if (paragraphDiv.classList.contains('paragraph')) {
+                    for (let j = 0; j < paragraphDiv.children.length; j++) {
+                        const wordSpan = paragraphDiv.children[j];
+                        if (wordSpan.classList.contains('word')) {
+                            if (currentTheoreticalWordIndex === wordIndex) {
+                                targetWordSpan = wordSpan;
+                                break;
+                            }
+                            currentTheoreticalWordIndex++;
+                        }
+                    }
+                }
+                // If the current testWords element is a newline, increment theoretical index
+                if (testWords[currentTheoreticalWordIndex] === '\n') {
+                    if (currentTheoreticalWordIndex === wordIndex) {
+                        // If the current "word" is a newline, we need to scroll to the beginning of the NEXT paragraph
+                        // to ensure it's visible. Or simply adjust based on the current word's previous position.
+                        // For scrolling, focusing on the last word of the previous line (if applicable) or the start of the next is key.
+                        // Let's make sure the next word is visible.
+                        if (currentTheoreticalWordIndex + 1 < testWords.length) {
+                             // Try to find the first word of the next paragraph
+                            let nextDomWordIndex = currentTheoreticalWordIndex + 1;
+                            let foundNextWord = false;
+                            for (let pIdx = i; pIdx < testArea.children.length; pIdx++) {
+                                const nextParagraphDiv = testArea.children[pIdx];
+                                if (nextParagraphDiv.classList.contains('paragraph')) {
+                                    if (nextParagraphDiv.children.length > 0) {
+                                        targetWordSpan = nextParagraphDiv.children[0]; // First word of next paragraph
+                                        foundNextWord = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (foundNextWord) break;
+                        } else {
+                            // Last element was a newline, nothing more to type
+                            break;
+                        }
+                    }
+                    currentTheoreticalWordIndex++;
+                }
+                if (targetWordSpan) break;
+            }
+
+
+            if (!targetWordSpan) return;
 
             const testAreaRect = testArea.getBoundingClientRect();
-            const wordRect = currentWordSpan.getBoundingClientRect();
+            const wordRect = targetWordSpan.getBoundingClientRect();
 
             // Calculate vertical scroll
             // Check if the word is below the visible area
@@ -854,7 +1010,9 @@
 
             const minutesElapsed = timeElapsed / 60;
 
-            // WPM calculation: (Correct Characters / 5) / (Time in Minutes)
+            // WPM calculation: (Correct Words / Time in Minutes)
+            // A "word" is often defined as 5 characters including spaces.
+            // For more robust WPM, we can use (Correct Chars / 5)
             const currentWPM = Math.round((correctChars / 5) / minutesElapsed);
             wpmDisplay.textContent = isNaN(currentWPM) ? 0 : currentWPM;
 
@@ -905,17 +1063,11 @@
             finalCpmDisplay.textContent = isNaN(finalCPM) ? 0 : finalCPM; // Set Final CPM
 
             // Add color to final results
-            finalWpmDisplay.classList.remove('result-value-red', 'result-value-orange', 'result-value-purple');
-            finalAccuracyDisplay.classList.remove('result-value-red', 'result-value-orange', 'result-value-purple');
-            finalErrorsDisplay.classList.remove('result-value-green', 'result-value-orange', 'result-value-purple');
-            rawWpmDisplay.classList.remove('result-value-green', 'result-value-red', 'result-value-orange');
-            finalCpmDisplay.classList.remove('result-value-green', 'result-value-red', 'result-value-purple');
-
-            finalWpmDisplay.classList.add('result-value-green');
-            finalAccuracyDisplay.classList.add('result-value-green');
-            finalErrorsDisplay.classList.add('result-value-red');
-            rawWpmDisplay.classList.add('result-value-purple');
-            finalCpmDisplay.classList.add('result-value-orange');
+            finalWpmDisplay.className = 'result-value-green';
+            finalAccuracyDisplay.className = 'result-value-green';
+            finalErrorsDisplay.className = 'result-value-red'; // Errors are bad, so red
+            rawWpmDisplay.className = 'result-value-purple';
+            finalCpmDisplay.className = 'result-value-orange';
 
 
             // Check and update target status
@@ -1000,11 +1152,28 @@
                 startTimer(); // Start timer on first input
             }
             
-            const currentWordExpected = testWords[wordIndex];
+            // Get the current expected word (or newline marker)
+            const currentExpectedItem = testWords[wordIndex];
             const typedText = e.target.value;
-            const currentWordSpan = testArea.children[wordIndex];
+            
+            // Handle newline character separately
+            if (currentExpectedItem === '\n') {
+                // If the user presses Enter, we consider it correct and move to the next "word"
+                if (typedText === '') { // Input is cleared on Enter
+                    // This means a previous Enter was processed, and input is now empty.
+                    // Do nothing here, wait for next real input.
+                } else {
+                    // User typed something when expecting an Enter (handled in keydown, or if they paste multiple lines)
+                    // This scenario is tricky for 'input' event alone. 
+                    // Let's rely on keydown for processing Enter.
+                }
+                return; // Do not process as a regular word
+            }
 
-            if (!currentWordSpan) { // No more words to type
+            const currentWordExpected = currentExpectedItem; // Actual word
+            const currentWordSpan = getDomWordSpan(wordIndex); // Get the DOM span for the current word
+
+            if (!currentWordSpan) { // No more words to type or issue finding word
                 endTest();
                 return;
             }
@@ -1029,8 +1198,8 @@
                 }
             }
 
-            // Handle the space character
-            const spaceSpan = charSpans[currentWordExpected.length]; // This should be the space span
+            // Handle the space character (if it exists for this word)
+            const spaceSpan = charSpans[currentWordExpected.length]; // This should be the space span if it's not the last word
             if (spaceSpan && spaceSpan.classList.contains('char-space')) {
                 spaceSpan.classList.remove('correct', 'incorrect', 'untyped');
                 if (typedText[currentWordExpected.length] === ' ') {
@@ -1043,11 +1212,13 @@
             }
 
 
-            // Handle extra characters typed (beyond the current word's length AND space)
+            // Handle extra characters typed (beyond the current word's length AND potential space)
+            // First, hide any previously rendered 'extra' chars
             for (let i = currentWordExpected.length + 1; i < charSpans.length; i++) {
-                charSpans[i].style.display = 'none'; // Hide any previously displayed 'extra' characters
+                charSpans[i].style.display = 'none'; 
             }
-            for (let i = currentWordExpected.length + 1; i < typedText.length; i++) {
+            // Then, render new extra chars
+            for (let i = currentWordExpected.length + (spaceSpan ? 1 : 0); i < typedText.length; i++) {
                 let extraSpan = charSpans[i];
                 if (!extraSpan) { // Create if it doesn't exist
                     extraSpan = document.createElement('span');
@@ -1058,58 +1229,101 @@
                 extraSpan.style.display = 'inline-block';
             }
             
-            // If word is completed (space or Enter pressed)
-            if (typedText.endsWith(' ') || wordIndex === testWords.length - 1 && typedText.length === currentWordExpected.length) {
-                // If it's the last word and fully typed (no space needed)
-                if (wordIndex === testWords.length - 1 && typedText.length === currentWordExpected.length && !typedText.endsWith(' ')) {
-                    // Do nothing, just let it type until full, end test on last char
-                } else if (typedText.endsWith(' ')) {
-                    const currentWordActual = currentWordExpected;
-                    const typedWord = typedText.trim(); // Remove trailing space
+            // If word is completed (space pressed for word, or exact match for last word without trailing space)
+            const isLastWord = wordIndex === testWords.length - 1;
+            const typedWordExactMatch = typedText === currentWordExpected && isLastWord;
+            const typedWordWithSpace = typedText.endsWith(' ') && typedText.trim() === currentWordExpected;
 
-                    // Recalculate correct and incorrect for the *entire* word + space before advancing
-                    let tempCorrectChars = 0;
-                    let tempIncorrectChars = 0;
+            if (typedWordWithSpace || typedWordExactMatch) {
+                // Determine the correct characters for the current "word" (including space if applicable)
+                let tempCorrectChars = 0;
+                let tempIncorrectChars = 0;
 
-                    for (let i = 0; i < currentWordActual.length; i++) {
-                        if (typedWord[i] === currentWordActual[i]) {
-                            tempCorrectChars++;
-                        } else if (typedWord[i] !== undefined) {
-                            tempIncorrectChars++;
-                        }
+                for (let i = 0; i < currentWordExpected.length; i++) {
+                    if (typedText[i] === currentWordExpected[i]) {
+                        tempCorrectChars++;
+                    } else {
+                        tempIncorrectChars++;
                     }
-                    
-                    // Account for the space character
-                    if (typedText.length > currentWordActual.length) { // Means space was typed or extra char
-                         if (typedText[currentWordActual.length] === ' ') {
-                            tempCorrectChars++; // Correct space
-                        } else {
-                            tempIncorrectChars++; // Something else typed instead of space
-                        }
-                    } else { // Word typed without space, but space was expected
-                        tempIncorrectChars++; // Omitted space
+                }
+
+                // Handle the trailing space for words (not for newlines)
+                if (spaceSpan && typedText.length > currentWordExpected.length) {
+                    if (typedText[currentWordExpected.length] === ' ') {
+                        tempCorrectChars++;
+                    } else {
+                        tempIncorrectChars++;
                     }
+                } else if (spaceSpan && typedText.length === currentWordExpected.length) {
+                    // User typed the word correctly but missed the space, count as error
+                    tempIncorrectChars++;
+                }
 
-                    // Add errors for extra characters typed beyond expected word + space
-                    if (typedText.length > currentWordActual.length + 1) { 
-                        tempIncorrectChars += (typedText.length - (currentWordActual.length + 1));
-                    }
 
-                    correctChars += tempCorrectChars;
-                    incorrectChars += tempIncorrectChars;
-                    typedCharsOverall += typedText.length; // Count all characters actually typed for this word
+                // Account for extra characters typed beyond the expected word (+ space)
+                const expectedLength = currentWordExpected.length + (spaceSpan ? 1 : 0);
+                if (typedText.length > expectedLength) {
+                    tempIncorrectChars += (typedText.length - expectedLength);
+                }
+                
+                correctChars += tempCorrectChars;
+                incorrectChars += tempIncorrectChars;
+                typedCharsOverall += typedText.length; // Count all characters actually typed for this word
 
-                    wordIndex++; // Move to next word
-                    typingInput.value = ''; // Clear input for next word
-                    highlightCurrentWord(); // Update highlighting and scroll
+                wordIndex++; // Move to next word
+                typingInput.value = ''; // Clear input for next word
+                highlightCurrentWord(); // Update highlighting and scroll
 
-                    if (wordIndex >= testWords.length) { // End test if all words are typed
-                        endTest();
-                        return;
-                    }
+                if (wordIndex >= testWords.length) { // End test if all words/newlines are typed
+                    endTest();
+                    return;
                 }
             }
             updateStats(); // Update stats in real-time
+        });
+
+
+        // Handle Enter key for custom stories with newlines
+        typingInput.addEventListener('keydown', (e) => {
+            if (!startTime) {
+                startTimer();
+            }
+
+            if (e.key === 'Enter') {
+                const currentExpectedItem = testWords[wordIndex];
+
+                // Check if we are actually expecting a newline
+                if (currentExpectedItem === '\n') {
+                    e.preventDefault(); // Prevent default Enter behavior (new line in input box)
+
+                    // Mark this "newline" as correctly typed
+                    correctChars++; // Count newline as one correct char for CPM/WPM calculation
+                    typedCharsOverall++; 
+                    incorrectChars += typingInput.value.length; // Any text typed before Enter in this 'newline' word is incorrect
+
+                    wordIndex++; // Move past the '\n' "word"
+                    typingInput.value = ''; // Clear input
+                    highlightCurrentWord(); // Re-highlight (moves to next actual word)
+
+                    if (wordIndex >= testWords.length) {
+                        endTest();
+                    }
+                    updateStats();
+                } else {
+                    // If Enter is pressed but we are not expecting a newline, it's an error
+                    e.preventDefault(); // Still prevent default, just treat as an error
+                    incorrectChars++;
+                    typedCharsOverall++;
+                    // Optionally: flash a red background or play an error sound
+                    // For now, just count the error.
+                    updateStats();
+                }
+            } else if (e.key === 'Backspace') {
+                // If Backspace is pressed, re-evaluate characters for visual feedback
+                // Note: The 'input' event usually handles state changes due to backspace,
+                // but if we need specific visual logic here, it can be added.
+                // For simplicity, current 'input' listener handles re-rendering of spans.
+            }
         });
 
 
