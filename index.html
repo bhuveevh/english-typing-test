@@ -93,6 +93,11 @@
         .timer-item p {
             color: #2196f3; /* Blue for timer */
         }
+        
+        /* New: Live CPM display style */
+        .cpm-item p {
+            color: #ff9800; /* Orange for CPM */
+        }
 
         /* Test Area */
         .test-area {
@@ -275,6 +280,21 @@
             border: 1px solid #90caf9;
         }
 
+        /* Result Colors */
+        .result-value-green {
+            color: #388e3c; /* Green for good results (WPM, Accuracy) */
+        }
+        .result-value-red {
+            color: #d32f2f; /* Red for bad results (Errors) */
+        }
+        .result-value-orange {
+            color: #ff9800; /* Orange for CPM */
+        }
+        .result-value-purple {
+            color: #6a1b9a; /* Purple for Raw WPM */
+        }
+
+
         .modal-content .button {
             margin-top: 25px;
             margin: 10px; /* Space between modal buttons */
@@ -365,6 +385,52 @@
             outline: none;
             box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.25);
         }
+
+        /* New: Custom Story Area styles */
+        #custom-story-area {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            border-top: 1px solid #cddc39;
+            padding-top: 20px;
+        }
+
+        #custom-story-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            border: 1px solid #aed581;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-family: 'Open Sans', sans-serif;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        #custom-story-textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.25);
+        }
+
+        .custom-story-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .custom-story-controls .button {
+            flex-grow: 1; /* Allow buttons to grow */
+            max-width: 48%; /* Adjust for spacing */
+        }
+        
+        @media (max-width: 480px) {
+            .custom-story-controls .button {
+                max-width: 100%; /* Stack buttons on very small screens */
+            }
+        }
+
 
         .settings-overlay .button-group {
             margin-top: 30px;
@@ -488,7 +554,16 @@
                 <select id="story-type">
                     <option value="random-words" selected>Random Words (Default)</option>
                     <option value="ai-story">AI Generated Story (Requires Backend)</option>
+                    <option value="user-custom">User Custom Story</option>
                 </select>
+            </div>
+
+            <div id="custom-story-area">
+                <label for="custom-story-textarea">Paste your story here:</label>
+                <textarea id="custom-story-textarea" placeholder="Paste the text you want to type here..."></textarea>
+                <div class="custom-story-controls">
+                    <button class="button secondary" id="add-story-link-button">Add Story from Reedsy</button>
+                    </div>
             </div>
 
             <div class="button-group">
@@ -514,6 +589,10 @@
                 <h3>Errors</h3>
                 <p id="errors">0</p>
             </div>
+            <div class="stat-item cpm-item">
+                <h3>CPM</h3>
+                <p id="cpm">0</p>
+            </div>
             <div class="stat-item timer-item">
                 <h3>Time Left</h3>
                 <p id="countdown">00:00</p>
@@ -536,19 +615,23 @@
                 <div class="stats">
                     <div class="stat-item">
                         <h3>Final Speed (WPM)</h3>
-                        <p id="final-wpm">0</p>
+                        <p id="final-wpm" class="result-value-green">0</p>
                     </div>
                     <div class="stat-item">
                         <h3>Final Accuracy (%)</h3>
-                        <p id="final-accuracy">0</p>
+                        <p id="final-accuracy" class="result-value-green">0</p>
                     </div>
                     <div class="stat-item">
                         <h3>Total Errors</h3>
-                        <p id="final-errors">0</p>
+                        <p id="final-errors" class="result-value-red">0</p>
                     </div>
                     <div class="stat-item">
                         <h3>Raw WPM</h3>
-                        <p id="raw-wpm">0</p>
+                        <p id="raw-wpm" class="result-value-purple">0</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Final CPM</h3>
+                        <p id="final-cpm" class="result-value-orange">0</p>
                     </div>
                     <div class="stat-item target-status" id="wpm-target-status">
                         <h3>WPM Target</h3>
@@ -594,12 +677,14 @@
                 "She picked up her brush and dabbed paint onto the canvas. Colors swirled, forming landscapes and dreams. Each stroke brought a new world to life, born from her imagination and skill."
             ];
             const randomWordList = [
-                "the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog", "typing", "practice", "keyboard", "speed", "accuracy", "challenge", "learn", "javascript", "html", "css", "web", "development", "program", "computer", "science", "internet", "browser", "editor", "function", "variable", "element", "document", "style", "console", "terminal", "algorithm", "data", "structure", "network", "server", "client", "request", "response", "protocol", "security", "encryption", "database", "query", "framework", "library", "component", "module", "package", "version", "control", "repository", "commit", "branch", "merge", "pull", "push", "remote", "local", "online", "offline", "connect", "disconnect", "upload", "download", "install", "update", "delete", "create", "read", "write", "execute", "debug", "test", "deploy", "monitor", "optimize", "scale", "automate", "build", "run", "stop", "start", "restart", "configure", "setup", "manage", "organize", "design", "develop", "implement", "maintain", "support", "troubleshoot", "resolve", "solution", "problem", "issue", "error", "warning", "success", "failure", "progress", "status", "report", "log", "history", "analytics", "metric", "performance", "resource", "memory", "cpu", "disk", "bandwidth", "latency", "throughput", "reliability", "availability", "scalability", "maintainability", "usability", "flexibility", "extensibility", "portability", "security", "integrity", "confidentiality", "authentication", "authorization", "audit", "compliance", "regulation", "standard", "guideline", "best", "practice", "pattern", "design", "architecture", "model", "diagram", "flowchart", "pseudocode", "documentation", "comment", "refactor", "optimize", "debug", "test", "deploy", "monitor", "optimize", "scale", "automate", "build", "run", "stop", "start", "restart", "configure", "setup", "manage", "organize", "design", "develop", "implement", "maintain", "support", "troubleshoot", "resolve", "solution", "problem", "issue", "error", "warning", "success", "failure", "progress", "status", "report", "log", "history", "analytics", "metric", "performance", "resource", "memory", "cpu", "disk", "bandwidth", "latency", "throughput", "reliability", "availability", "scalability", "maintainability", "usability", "flexibility", "extensibility", "portability", "security", "integrity", "confidentiality", "authentication", "authorization", "audit", "compliance", "regulation", "standard", "guideline", "best", "practice", "pattern", "design", "architecture", "model", "diagram", "flowchart", "pseudocode", "documentation", "comment", "refactor", "optimize", "debug", "test", "deploy", "monitor", "alert", "log", "trace", "profile", "benchmark", "analysis", "report", "summary", "detail", "overview", "context", "scope", "requirement", "specification", "feature", "bug", "fix", "patch", "release", "version", "update", "upgrade", "downgrade", "install", "uninstall", "setup", "configure", "customize", "personalize", "settings", "options", "preferences", "profile", "account", "user", "admin", "guest", "role", "permission", "access", "control", "security", "privacy", "data", "information", "knowledge", "wisdom", "intelligence", "learning", "education", "training", "course", "lesson", "tutorial", "guide", "manual", "book", "article", "blog", "forum", "community", "support", "help", "faq", "troubleshoot", "debug", "solve", "resolve", "fix", "repair", "restore", "backup", "recover", "archive", "compress", "decompress", "encrypt", "decrypt", "hash", "checksum", "validate", "verify", "authenticate", "authorize", "grant", "revoke", "deny", "allow", "enable", "disable", "toggle", "switch", "activate", "deactivate", "start", "stop", "pause", "resume", "cancel", "abort", "retry", "redo", "undo", "save", "load", "open", "close", "new", "edit", "delete", "copy", "cut", "paste", "select", "all", "clear", "reset", "submit", "send", "receive", "download", "upload", "import", "export", "share", "print", "preview", "zoom", "in", "out", "fit", "width", "height", "actual", "size", "fullscreen", "exit", "search", "filter", "sort", "group", "categorize", "tag", "label", "mark", "favorite", "bookmark", "pin", "hide", "show", "collapse", "expand", "move", "rename", "duplicate", "clone", "merge", "split", "join", "combine", "separate", "extract", "insert", "remove", "replace", "find", "replace", "goto", "line", "column", "character", "word", "sentence", "paragraph", "document", "file", "folder", "directory", "path", "url", "uri", "urn", "protocol", "host", "port", "query", "fragment", "scheme", "authority", "userinfo", "hostname", "pathname", "search", "hash", "origin", "protocol", "domain", "subdomain", "top-level", "second-level", "country-code", "generic", "reserved", "public", "private", "local", "global", "internal", "external", "remote", "cloud", "on-premise", "hybrid", "distributed", "centralized", "decentralized", "peer-to-peer", "client-server", "front-end", "back-end", "full-stack", "desktop", "mobile", "web", "native", "cross-platform", "hybrid", "responsive", "adaptive", "fluid", "fixed", "grid", "flexbox", "bootstrap", "material", "design", "ui", "ux", "interface", "experience", "interaction", "usability", "accessibility", "performance", "security", "scalability", "reliability", "availability", "maintainability", "testability", "extensibility", "flexibility", "portability", "reusability", "modularity", "simplicity", "consistency", "efficiency", "robustness", "error-handling", "logging", "monitoring", "debugging", "testing", "deployment", "automation", "scripting", "programming", "coding", "software", "hardware", "firmware", "middleware", "operating", "system", "kernel", "shell", "command", "line", "interface", "graphical", "user", "interface", "api", "sdk", "library", "framework", "tool", "utility", "application", "program", "service", "daemon", "process", "thread", "concurrency", "parallelism", "synchronization", "asynchronous", "callback", "promise", "async", "await", "event", "loop", "queue", "stack", "heap", "tree", "graph", "linked", "list", "array", "object", "map", "set", "iterator", "generator", "decorator", "closure", "higher-order", "function", "pure", "function", "side-effect", "idempotent", "immutable", "mutable", "state", "stateless", "stateful", "component", "props", "state", "lifecycle", "hook", "context", "provider", "consumer", "reducer", "action", "dispatch", "store", "subscribe", "unsubscribe", "middleware", "thunk", "saga", "redux", "mobx", "vuex", "angular", "react", "vue", "jquery", "lodash", "underscore", "moment", "date-fns", "axios", "fetch", "websocket", "socket.io", "graphql", "rest", "api", "json", "xml", "yaml", "csv", "tsv", "markdown", "html", "css", "javascript", "typescript", "python", "java", "csharp", "go", "rust", "php", "ruby", "swift", "kotlin", "scala", "haskell", "clojure", "lisp", "erlang", "elixir", "perl", "bash", "shell", "powershell", "sql", "nosql", "mongodb", "postgresql", "mysql", "sqlite", "redis", "cassandra", "elasticsearch", "kafka", "rabbit", "mq", "aws", "azure", "gcp", "docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "jenkins", "travis", "ci", "circleci", "github", "actions", "azure", "devops", "jira", "trello", "asana", "slack", "discord", "zoom", "google", "meet", "microsoft", "teams", "outlook", "gmail", "calendar", "drive", "docs", "sheets", "slides", "forms", "maps", "youtube", "twitter", "facebook", "instagram", "linkedin", "snapchat", "tiktok", "reddit", "pinterest", "whatsapp", "telegram", "signal", "viber", "wechat", "line", "skype", "facetime", "imessage", "sms", "email", "phone", "call", "video", "audio", "text", "message", "chat", "group", "channel", "thread", "notification", "alert", "badge", "icon", "button", "link", "input", "text", "area", "checkbox", "radio", "select", "option", "dropdown", "slider", "range", "progress", "bar", "spinner", "loader", "tooltip", "popover", "modal", "dialog", "accordion", "tabs", "carousel", "pagination", "breadcrumb", "navbar", "sidebar", "footer", "header", "main", "section", "article", "aside", "figure", "figcaption", "details", "summary", "dialog", "menu", "item", "list", "unordered", "ordered", "definition", "table", "row", "column", "cell", "caption", "thead", "tbody", "tfoot", "form", "fieldset", "legend", "label", "input", "textarea", "button", "select", "option", "datalist", "output", "meter", "progress", "img", "picture", "source", "svg", "canvas", "audio", "video", "track", "embed", "iframe", "object", "param", "map", "area", "link", "meta", "style", "script", "noscript", "template", "slot", "abbr", "address", "b", "bdi", "bdo", "blockquote", "cite", "code", "del", "dfn", "em", "i", "ins", "kbd", "mark", "q", "rp", "rt", "rtc", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "acronym", "applet", "basefont", "big", "center", "dir", "font", "frame", "frameset", "noframes", "strike", "tt"
+                "the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog", "typing", "practice", "keyboard", "speed", "accuracy", "challenge", "learn", "javascript", "html", "css", "web", "development", "program", "computer", "science", "internet", "browser", "editor", "function", "variable", "element", "document", "style", "console", "terminal", "algorithm", "data", "structure", "network", "server", "client", "request", "response", "protocol", "security", "encryption", "database", "query", "framework", "library", "component", "module", "package", "version", "control", "repository", "commit", "branch", "merge", "pull", "push", "remote", "local", "online", "offline", "connect", "disconnect", "upload", "download", "install", "update", "delete", "create", "read", "write", "execute", "debug", "test", "deploy", "monitor", "optimize", "scale", "automate", "build", "run", "stop", "start", "restart", "configure", "setup", "manage", "organize", "design", "develop", "implement", "maintain", "support", "troubleshoot", "resolve", "solution", "problem", "issue", "error", "warning", "success", "failure", "progress", "status", "report", "log", "history", "analytics", "metric", "performance", "resource", "memory", "cpu", "disk", "bandwidth", "latency", "throughput", "reliability", "availability", "scalability", "maintainability", "usability", "flexibility", "extensibility", "portability", "security", "integrity", "confidentiality", "authentication", "authorization", "audit", "compliance", "regulation", "standard", "guideline", "best", "practice", "pattern", "design", "architecture", "model", "diagram", "flowchart", "pseudocode", "documentation", "comment", "refactor", "optimize", "debug", "test", "deploy", "monitor", "alert", "log", "trace", "profile", "benchmark", "analysis", "report", "summary", "detail", "overview", "context", "scope", "requirement", "specification", "feature", "bug", "fix", "patch", "release", "version", "update", "upgrade", "downgrade", "install", "uninstall", "setup", "configure", "customize", "personalize", "settings", "options", "preferences", "profile", "account", "user", "admin", "guest", "role", "permission", "access", "control", "security", "privacy", "data", "information", "knowledge", "wisdom", "intelligence", "learning", "education", "training", "course", "lesson", "tutorial", "guide", "manual", "book", "article", "blog", "forum", "community", "support", "help", "faq", "troubleshoot", "debug", "solve", "resolve", "fix", "repair", "restore", "backup", "recover", "archive", "compress", "decompress", "encrypt", "decrypt", "hash", "checksum", "validate", "verify", "authenticate", "authorize", "grant", "revoke", "deny", "allow", "enable", "disable", "toggle", "switch", "activate", "deactivate", "start", "stop", "pause", "resume", "cancel", "abort", "retry", "redo", "undo", "save", "load", "open", "close", "new", "edit", "delete", "copy", "cut", "paste", "select", "all", "clear", "reset", "submit", "send", "receive", "download", "upload", "import", "export", "share", "print", "preview", "zoom", "in", "out", "fit", "width", "height", "actual", "size", "fullscreen", "exit", "search", "filter", "sort", "group", "categorize", "tag", "label", "mark", "favorite", "bookmark", "pin", "hide", "show", "collapse", "expand", "move", "rename", "duplicate", "clone", "merge", "split", "join", "combine", "separate", "extract", "insert", "remove", "replace", "find", "replace", "goto", "line", "column", "character", "word", "sentence", "paragraph", "document", "file", "folder", "directory", "path", "url", "uri", "urn", "protocol", "host", "port", "query", "fragment", "scheme", "authority", "userinfo", "hostname", "pathname", "search", "hash", "origin", "protocol", "domain", "subdomain", "top-level", "second-level", "country-code", "generic", "reserved", "public", "private", "local", "global", "internal", "external", "remote", "cloud", "on-premise", "hybrid", "distributed", "centralized", "decentralized", "peer-to-peer", "client-server", "front-end", "back-end", "full-stack", "desktop", "mobile", "web", "native", "cross-platform", "hybrid", "responsive", "adaptive", "fluid", "fixed", "grid", "flexbox", "bootstrap", "material", "design", "ui", "ux", "interface", "experience", "interaction", "usability", "accessibility", "performance", "security", "scalability", "reliability", "availability", "maintainability", "testability", "extensibility", "flexibility", "portability", "reusability", "modularity", "simplicity", "consistency", "efficiency", "robustness", "error-handling", "logging", "monitoring", "debugging", "testing", "deployment", "automation", "scripting", "programming", "coding", "software", "hardware", "firmware", "middleware", "operating", "system", "kernel", "shell", "command", "line", "interface", "graphical", "user", "interface", "api", "sdk", "library", "framework", "tool", "utility", "application", "program", "service", "daemon", "process", "thread", "concurrency", "parallelism", "synchronization", "asynchronous", "callback", "promise", "async", "await", "event", "loop", "queue", "stack", "heap", "tree", "graph", "linked", "list", "array", "object", "map", "set", "iterator", "generator", "decorator", "closure", "higher-order", "function", "pure", "function", "side-effect", "idempotent", "immutable", "mutable", "state", "stateless", "stateful", "component", "props", "state", "lifecycle", "hook", "context", "provider", "consumer", "reducer", "action", "dispatch", "store", "subscribe", "unsubscribe", "middleware", "thunk", "saga", "redux", "mobx", "vuex", "angular", "react", "vue", "jquery", "lodash", "underscore", "moment", "date-fns", "axios", "fetch", "websocket", "socket.io", "graphql", "rest", "api", "json", "xml", "yaml", "csv", "tsv", "markdown", "html", "css", "javascript", "typescript", "python", "java", "csharp", "go", "rust", "php", "ruby", "swift", "kotlin", "scala", "haskell", "clojure", "lisp", "erlang", "elixir", "perl", "bash", "shell", "powershell", "sql", "nosql", "mongodb", "postgresql", "mysql", "sqlite", "redis", "cassandra", "elasticsearch", "kafka", "rabbit", "mq", "aws", "azure", "gcp", "docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "jenkins", "travis", "ci", "circleci", "github", "actions", "azure", "devops", "jira", "trello", "asana", "slack", "discord", "zoom", "google", "meet", "microsoft", "teams", "outlook", "gmail", "calendar", "drive", "docs", "sheets", "slides", "forms", "maps", "youtube", "twitter", "facebook", "instagram", "linkedin", "snapchat", "tiktok", "reddit", "pinterest", "whatsapp", "telegram", "signal", "viber", "wechat", "line", "skype", "facetime", "imessage", "sms", "email", "phone", "call", "video", "audio", "text", "message", "chat", "group", "channel", "thread", "notification", "alert", "badge", "icon", "button", "link", "input", "text", "area", "checkbox", "radio", "select", "option", "dropdown", "slider", "range", "progress", "bar", "spinner", "loader", "tooltip", "popover", "modal", "dialog", "accordion", "tabs", "carousel", "pagination", "breadcrumb", "navbar", "sidebar", "footer", "header", "main", "section", "article", "aside", "figure", "figcaption", "details", "summary", "dialog", "menu", "item", "list", "unordered", "ordered", "definition", "table", "row", "column", "cell", "caption", "thead", "tbody", "tfoot", "form", "fieldset", "legend", "label", "input", "textarea", "button", "select", "option", "datalist", "output", "meter", "progress", "img", "picture", "source", "svg", "canvas", "audio", "video", "track", "embed", "iframe", "object", "param", "map", "area", "link", "meta", "style", "script", "noscript", "template", "slot", "abbr", "address", "b", "bdi", "bdo", "blockquote", "cite", "code", "del", "dfn", "em", "i", "ins", "kbd", "mark", "q", "rp", "rt", "rtc", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "acronym", "applet", "basefont", "big", "center", "dir", "font", "frame", "frameset", "noframes", "strike", "tt"
             ];
             // If random-words is selected, we combine words to form a longer story for variety
             if (lengthCategory === 'random-words') {
                 let generatedText = "";
-                const targetWordCount = 200 * (testDurationSelect.value / 5); // Roughly adjust words based on duration
+                // Increase base word count to ensure enough text for longer durations
+                const baseWordCount = 300; 
+                const targetWordCount = baseWordCount * (testDurationSelect.value / 5); 
                 for (let i = 0; i < targetWordCount; i++) {
                     generatedText += randomWordList[Math.floor(Math.random() * randomWordList.length)] + " ";
                 }
@@ -608,7 +693,7 @@
                 return shortStories[Math.floor(Math.random() * shortStories.length)];
             } else if (lengthCategory === 'long') {
                 return longStories[Math.floor(Math.random() * longStories.length)];
-            } else { // 'medium' or default AI story
+            } else { // 'medium' or default AI story fallback
                 return "The sun dipped below the horizon, painting the sky in hues of orange and purple. A lone bird soared across the fading light, its wings catching the last rays. Below, the city lights began to twinkle, promising a night of bustling activity. A gentle breeze carried the scent of blooming jasmine through the open window. It was a perfect evening to reflect on the day's events and anticipate the quiet hours ahead. The world felt at peace, a symphony of subtle changes unfolding as darkness embraced the landscape, bringing with it the promise of a new dawn and fresh opportunities. Every moment held a quiet beauty, a fleeting perfection that made the heart sing with gratitude for its simple existence.";
             }
         }
@@ -621,6 +706,7 @@
         const wpmDisplay = document.getElementById('wpm');
         const accuracyDisplay = document.getElementById('accuracy');
         const errorsDisplay = document.getElementById('errors');
+        const cpmDisplay = document.getElementById('cpm'); // New CPM display
         const countdownDisplay = document.getElementById('countdown');
         const restartButton = document.getElementById('restart-button');
         const settingsButton = document.getElementById('settings-button');
@@ -629,6 +715,7 @@
         const finalAccuracyDisplay = document.getElementById('final-accuracy');
         const finalErrorsDisplay = document.getElementById('final-errors');
         const rawWpmDisplay = document.getElementById('raw-wpm');
+        const finalCpmDisplay = document.getElementById('final-cpm'); // New Final CPM display
         const modalRestartButton = document.getElementById('modal-restart-button');
         const modalSettingsButton = document.getElementById('modal-settings-button');
 
@@ -643,6 +730,10 @@
         const wpmTargetStatus = document.getElementById('wpm-target-status');
         const accuracyTargetStatus = document.getElementById('accuracy-target-status');
 
+        // New Custom Story Elements
+        const customStoryArea = document.getElementById('custom-story-area');
+        const customStoryTextarea = document.getElementById('custom-story-textarea');
+        const addStoryLinkButton = document.getElementById('add-story-link-button');
 
         // Global Variables
         let testWords = [];
@@ -658,7 +749,8 @@
 
         let userTargetWPM = null;
         let userTargetAccuracy = null;
-        let currentStoryType = 'random-words';
+        let currentStoryType = 'random-words'; // Default story type
+        let customStoryText = ''; // Stores user's custom story
 
         // Utility to format time
         function formatTime(seconds) {
@@ -680,11 +772,21 @@
                     lengthCategory = 'long';
                 }
                 textToType = await fetchAIGeneratedStory(lengthCategory);
+            } else if (currentStoryType === 'user-custom') {
+                textToType = customStoryText.trim();
+                if (textToType === "") {
+                    alert("Please paste your custom story in the text area or select another story type.");
+                    // Revert to default or show settings again if custom story is empty
+                    settingsOverlay.classList.add('show');
+                    mainContent.classList.add('content-hidden');
+                    return;
+                }
             } else { // random-words
-                textToType = await fetchAIGeneratedStory('random-words'); // Use the same function for random words now
+                textToType = await fetchAIGeneratedStory('random-words');
             }
 
-            testWords = textToType.split(' '); // Split by space to get words
+            // Split by space to get words, then remove any empty strings resulting from multiple spaces
+            testWords = textToType.split(/\s+/).filter(word => word.length > 0); 
 
             testArea.innerHTML = '';
             testWords.forEach((word, wordIdx) => {
@@ -745,13 +847,20 @@
 
         function updateStats() {
             const timeElapsed = (defaultTestDuration - timeLeft);
-            if (timeElapsed === 0) return; // Avoid division by zero at start
+            if (timeElapsed === 0) {
+                cpmDisplay.textContent = 0;
+                return; // Avoid division by zero at start
+            }
 
             const minutesElapsed = timeElapsed / 60;
 
             // WPM calculation: (Correct Characters / 5) / (Time in Minutes)
             const currentWPM = Math.round((correctChars / 5) / minutesElapsed);
             wpmDisplay.textContent = isNaN(currentWPM) ? 0 : currentWPM;
+
+            // CPM calculation: Total Correct Characters / (Time in Minutes)
+            const currentCPM = Math.round(correctChars / minutesElapsed);
+            cpmDisplay.textContent = isNaN(currentCPM) ? 0 : currentCPM;
 
             const currentAccuracy = typedCharsOverall === 0 ? 0 : Math.round((correctChars / typedCharsOverall) * 100);
             accuracyDisplay.textContent = isNaN(currentAccuracy) ? 0 : currentAccuracy;
@@ -786,12 +895,28 @@
             const finalWPM = finalMinutesElapsed > 0 ? Math.round((correctChars / 5) / finalMinutesElapsed) : 0;
             const finalAccuracy = typedCharsOverall === 0 ? 0 : Math.round((correctChars / typedCharsOverall) * 100);
             const finalRawWPM = finalMinutesElapsed > 0 ? Math.round((typedCharsOverall / 5) / finalMinutesElapsed) : 0;
+            const finalCPM = finalMinutesElapsed > 0 ? Math.round(correctChars / finalMinutesElapsed) : 0;
 
 
             finalWpmDisplay.textContent = isNaN(finalWPM) ? 0 : finalWPM;
             finalAccuracyDisplay.textContent = isNaN(finalAccuracy) ? 0 : finalAccuracy;
             finalErrorsDisplay.textContent = incorrectChars;
-            rawWPMDisplay.textContent = isNaN(finalRawWPM) ? 0 : finalRawWPM;
+            rawWpmDisplay.textContent = isNaN(finalRawWPM) ? 0 : finalRawWPM;
+            finalCpmDisplay.textContent = isNaN(finalCPM) ? 0 : finalCPM; // Set Final CPM
+
+            // Add color to final results
+            finalWpmDisplay.classList.remove('result-value-red', 'result-value-orange', 'result-value-purple');
+            finalAccuracyDisplay.classList.remove('result-value-red', 'result-value-orange', 'result-value-purple');
+            finalErrorsDisplay.classList.remove('result-value-green', 'result-value-orange', 'result-value-purple');
+            rawWpmDisplay.classList.remove('result-value-green', 'result-value-red', 'result-value-orange');
+            finalCpmDisplay.classList.remove('result-value-green', 'result-value-red', 'result-value-purple');
+
+            finalWpmDisplay.classList.add('result-value-green');
+            finalAccuracyDisplay.classList.add('result-value-green');
+            finalErrorsDisplay.classList.add('result-value-red');
+            rawWpmDisplay.classList.add('result-value-purple');
+            finalCpmDisplay.classList.add('result-value-orange');
+
 
             // Check and update target status
             if (userTargetWPM !== null && !isNaN(userTargetWPM)) {
@@ -826,7 +951,7 @@
             settingsButton.disabled = false;
         }
 
-        async function initializeTest(duration, targetWPM, targetAccuracy, storyType) {
+        async function initializeTest(duration, targetWPM, targetAccuracy, storyType, customText = '') {
             clearInterval(timerInterval);
             defaultTestDuration = duration * 60; // Convert minutes to seconds
             timeLeft = defaultTestDuration;
@@ -843,16 +968,24 @@
             userTargetWPM = targetWPM ? parseInt(targetWPM) : null;
             userTargetAccuracy = targetAccuracy ? parseInt(targetAccuracy) : null;
             currentStoryType = storyType;
+            customStoryText = customText; // Set custom story if provided
 
             wpmDisplay.textContent = '0';
             accuracyDisplay.textContent = '0';
             errorsDisplay.textContent = '0';
+            cpmDisplay.textContent = '0'; // Reset CPM display
 
             // Ensure buttons are clickable for a new test or settings
             restartButton.disabled = false; 
             settingsButton.disabled = false;
             
-            await generateAndRenderTestWords(); // Generate new words based on settings
+            // Generate words and check if successful (e.g., custom story not empty)
+            await generateAndRenderTestWords();
+            if (testWords.length === 0 && currentStoryType === 'user-custom') {
+                // If custom story was selected but empty, do not proceed with test
+                return; 
+            }
+
             typingInput.focus();
             resultModal.classList.remove('show');
             settingsOverlay.classList.remove('show'); // Hide settings overlay
@@ -876,7 +1009,6 @@
                 return;
             }
 
-            // Get all character spans including the potential space span
             const charSpans = Array.from(currentWordSpan.children); 
 
             // Update char rendering within the current word
@@ -925,90 +1057,58 @@
                 extraSpan.classList.add('extra');
                 extraSpan.style.display = 'inline-block';
             }
-
-            // Update typedCharsOverall for real-time accuracy and raw WPM
-            // This needs to correctly account for backspaces as well.
-            // A simple way is to re-calculate it or adjust based on input type.
-            const previousTypedCharsOverall = typedCharsOverall; // Store for comparison
-            typedCharsOverall = e.target.value.length; // Characters in current input
             
-            // Adjust for total characters typed considering backspaces and completed words
-            // This logic is tricky. A more robust way is to count actual correct/incorrect typed chars.
-            // For now, let's update correctChars and incorrectChars based on the current word's state.
-
-            let newCorrectChars = 0;
-            let newIncorrectChars = 0;
-
-            for (let i = 0; i < currentWordExpected.length; i++) {
-                const charExpected = currentWordExpected[i];
-                const typedChar = typedText[i];
-                if (typedChar === charExpected) {
-                    newCorrectChars++;
-                } else if (typedChar !== undefined) {
-                    newIncorrectChars++;
-                }
-            }
-
-            // Account for the space at the end of the word if typed
-            if (typedText.length > currentWordExpected.length) {
-                if (typedText[currentWordExpected.length] === ' ') {
-                    newCorrectChars++;
-                } else {
-                    newIncorrectChars++;
-                }
-            }
-
-            // This approach is simplified and might not be perfect for every backspace scenario
-            // For robust accuracy, you'd track character-by-character changes and tally.
-            // For this single-file setup, we'll keep it simple for now.
-
             // If word is completed (space or Enter pressed)
-            if (typedText.endsWith(' ')) {
-                const currentWordActual = currentWordExpected;
-                const typedWord = typedText.trim(); // Remove trailing space
+            if (typedText.endsWith(' ') || wordIndex === testWords.length - 1 && typedText.length === currentWordExpected.length) {
+                // If it's the last word and fully typed (no space needed)
+                if (wordIndex === testWords.length - 1 && typedText.length === currentWordExpected.length && !typedText.endsWith(' ')) {
+                    // Do nothing, just let it type until full, end test on last char
+                } else if (typedText.endsWith(' ')) {
+                    const currentWordActual = currentWordExpected;
+                    const typedWord = typedText.trim(); // Remove trailing space
 
-                // Recalculate correct and incorrect for the *entire* word + space before advancing
-                let tempCorrectChars = 0;
-                let tempIncorrectChars = 0;
+                    // Recalculate correct and incorrect for the *entire* word + space before advancing
+                    let tempCorrectChars = 0;
+                    let tempIncorrectChars = 0;
 
-                for (let i = 0; i < currentWordActual.length; i++) {
-                    if (typedWord[i] === currentWordActual[i]) {
-                        tempCorrectChars++;
-                    } else if (typedWord[i] !== undefined) {
-                        tempIncorrectChars++;
+                    for (let i = 0; i < currentWordActual.length; i++) {
+                        if (typedWord[i] === currentWordActual[i]) {
+                            tempCorrectChars++;
+                        } else if (typedWord[i] !== undefined) {
+                            tempIncorrectChars++;
+                        }
                     }
-                }
-                
-                // Account for the space character
-                if (typedText.length > currentWordActual.length) { // Means space was typed or extra char
-                     if (typedText[currentWordActual.length] === ' ') {
-                        tempCorrectChars++; // Correct space
-                    } else {
-                        tempIncorrectChars++; // Something else typed instead of space
+                    
+                    // Account for the space character
+                    if (typedText.length > currentWordActual.length) { // Means space was typed or extra char
+                         if (typedText[currentWordActual.length] === ' ') {
+                            tempCorrectChars++; // Correct space
+                        } else {
+                            tempIncorrectChars++; // Something else typed instead of space
+                        }
+                    } else { // Word typed without space, but space was expected
+                        tempIncorrectChars++; // Omitted space
                     }
-                } else { // Word typed without space, but space was expected
-                    tempIncorrectChars++; // Omitted space
-                }
 
-                // Add errors for extra characters typed beyond expected word + space
-                if (typedText.length > currentWordActual.length + 1) { // If more than word and 1 space
-                    tempIncorrectChars += (typedText.length - (currentWordActual.length + 1));
-                }
+                    // Add errors for extra characters typed beyond expected word + space
+                    if (typedText.length > currentWordActual.length + 1) { 
+                        tempIncorrectChars += (typedText.length - (currentWordActual.length + 1));
+                    }
 
-                correctChars += tempCorrectChars;
-                incorrectChars += tempIncorrectChars;
-                typedCharsOverall += typedText.length; // Count all characters actually typed for this word
+                    correctChars += tempCorrectChars;
+                    incorrectChars += tempIncorrectChars;
+                    typedCharsOverall += typedText.length; // Count all characters actually typed for this word
 
-                wordIndex++; // Move to next word
-                typingInput.value = ''; // Clear input for next word
-                highlightCurrentWord(); // Update highlighting and scroll
+                    wordIndex++; // Move to next word
+                    typingInput.value = ''; // Clear input for next word
+                    highlightCurrentWord(); // Update highlighting and scroll
 
-                if (wordIndex >= testWords.length) { // End test if all words are typed
-                    endTest();
-                    return;
+                    if (wordIndex >= testWords.length) { // End test if all words are typed
+                        endTest();
+                        return;
+                    }
                 }
             }
-
             updateStats(); // Update stats in real-time
         });
 
@@ -1023,6 +1123,13 @@
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
             storyTypeSelect.value = currentStoryType;
+            // Ensure custom story area is hidden/shown correctly on re-opening settings
+            if (currentStoryType === 'user-custom') {
+                customStoryArea.style.display = 'block';
+                customStoryTextarea.value = customStoryText; // Show previously typed custom text
+            } else {
+                customStoryArea.style.display = 'none';
+            }
         });
 
         settingsButton.addEventListener('click', () => {
@@ -1033,22 +1140,38 @@
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
             storyTypeSelect.value = currentStoryType;
+            // Ensure custom story area is hidden/shown correctly
+            if (currentStoryType === 'user-custom') {
+                customStoryArea.style.display = 'block';
+                customStoryTextarea.value = customStoryText; // Show previously typed custom text
+            } else {
+                customStoryArea.style.display = 'none';
+            }
         });
 
-        saveSettingsButton.addEventListener('click', () => {
+        saveSettingsButton.addEventListener('click', async () => {
             const duration = parseInt(testDurationSelect.value);
             const targetWPM = targetWpmInput.value;
             const targetAccuracy = targetAccuracyInput.value;
             const storyType = storyTypeSelect.value;
-            initializeTest(duration, targetWPM, targetAccuracy, storyType);
+            let storyContent = '';
+
+            if (storyType === 'user-custom') {
+                storyContent = customStoryTextarea.value.trim();
+                if (storyContent === "") {
+                    alert("Please paste your custom story in the text area.");
+                    return; // Prevent test from starting if custom story is empty
+                }
+            }
+            await initializeTest(duration, targetWPM, targetAccuracy, storyType, storyContent);
         });
 
-        skipSettingsButton.addEventListener('click', () => {
-            initializeTest(5, null, null, 'random-words'); // Default to 5 mins, no targets, random words
+        skipSettingsButton.addEventListener('click', async () => {
+            await initializeTest(5, null, null, 'random-words'); // Default to 5 mins, no targets, random words
         });
 
-        modalRestartButton.addEventListener('click', () => {
-            initializeTest(defaultTestDuration / 60, userTargetWPM, userTargetAccuracy, currentStoryType); // Use current settings for restart
+        modalRestartButton.addEventListener('click', async () => {
+            await initializeTest(defaultTestDuration / 60, userTargetWPM, userTargetAccuracy, currentStoryType, customStoryText); // Use current settings for restart
         });
 
         modalSettingsButton.addEventListener('click', () => {
@@ -1060,6 +1183,27 @@
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
             storyTypeSelect.value = currentStoryType;
+            // Ensure custom story area is hidden/shown correctly
+            if (currentStoryType === 'user-custom') {
+                customStoryArea.style.display = 'block';
+                customStoryTextarea.value = customStoryText; // Show previously typed custom text
+            } else {
+                customStoryArea.style.display = 'none';
+            }
+        });
+
+        // Event listener for Story Type dropdown to show/hide custom story area
+        storyTypeSelect.addEventListener('change', () => {
+            if (storyTypeSelect.value === 'user-custom') {
+                customStoryArea.style.display = 'block';
+            } else {
+                customStoryArea.style.display = 'none';
+            }
+        });
+
+        // Event listener for "Add Story from Reedsy" button
+        addStoryLinkButton.addEventListener('click', () => {
+            window.open('https://blog.reedsy.com/short-stories/', '_blank');
         });
 
         // Initial setup on page load
@@ -1068,6 +1212,8 @@
             // Hide main content initially
             mainContent.classList.add('content-hidden');
             countdownDisplay.textContent = formatTime(defaultTestDuration); // Show initial default time
+            // Ensure custom story area is hidden initially
+            customStoryArea.style.display = 'none';
         });
 
     </script>
