@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern English Typing Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basic Reset & Font Imports */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align at the top */
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50; /* Green primary color */
+            margin-bottom: 25px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2em;
+        }
+
+        /* Test Area */
+        .test-area {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #e8f5e9; /* Lighter green background */
+            border-radius: 8px;
+            border: 1px solid #c8e6c9;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            min-height: 150px; /* Ensure visible height */
+            position: relative;
+        }
+
+        .word {
+            display: inline-block; /* Allows words to wrap naturally */
+            margin-right: 5px; /* Space between words */
+            padding: 2px 0; /* Vertical padding for highlighting */
+            line-height: 1.6;
+            font-size: 1.3em;
+            font-family: 'Source Code Pro', monospace; /* Monospace for typing text */
+        }
+
+        .current-word {
+            background-color: #ffe082; /* Light orange for current word */
+            border-radius: 4px;
+            padding: 2px 5px;
+        }
+
+        .correct {
+            color: #28a745; /* Green for correct letters */
+        }
+
+        .incorrect {
+            color: #dc3545; /* Red for incorrect letters */
+            text-decoration: underline wavy #dc3545 2px; /* Wavy underline for errors */
+        }
+
+        .extra {
+            color: #6c757d; /* Gray for extra typed characters */
+            background-color: #f8d7da; /* Light red background for extra */
+            border-radius: 3px;
+            padding: 0 2px;
+        }
+
+        .untyped {
+            color: #7b7b7b; /* Dark gray for untyped letters */
+        }
+
+        /* Input Area */
+        #typing-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.5em;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Source Code Pro', monospace;
+            background-color: #fcfcfc;
+        }
+
+        #typing-input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Stats Area */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 20px; /* Space between stat items */
+        }
+
+        .stat-item {
+            background-color: #f5f5f5;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            min-width: 150px;
+            flex: 1; /* Allow items to grow */
+        }
+
+        .stat-item h3 {
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .stat-item p {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Controls */
+        .controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 0 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            background-color: #45a049; /* Darker green on hover */
+            transform: translateY(-2px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Result Modal */
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+        }
+
+        .result-modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .result-modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .modal-content .stat-item {
+            margin-bottom: 15px;
+            background-color: #e8f5e9;
+        }
+
+        .modal-content .button {
+            margin-top: 20px;
+        }
+
+        /* Timer */
+        .timer {
+            text-align: center;
+            font-size: 3em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #e8f5e9;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .test-area {
+                padding: 15px;
+            }
+
+            .word {
+                font-size: 1.1em;
+            }
+
+            #typing-input {
+                font-size: 1.2em;
+                padding: 12px 15px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stat-item {
+                width: 100%;
+            }
+
+            .stat-item p {
+                font-size: 1.8em;
+            }
+
+            .button {
+                padding: 10px 20px;
+                font-size: 1em;
+                margin: 5px;
+            }
+
+            .timer {
+                font-size: 2.5em;
+            }
+
+            .modal-content {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Modern English Typing Test</h1>
+
+        <div class="timer">
+            <span id="countdown">60</span>s
+        </div>
+
+        <div class="test-area" id="test-area">
+            </div>
+
+        <input type="text" id="typing-input" placeholder="Start typing here...">
+
+        <div class="stats">
+            <div class="stat-item">
+                <h3>Speed (WPM)</h3>
+                <p id="wpm">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Accuracy (%)</h3>
+                <p id="accuracy">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Errors</h3>
+                <p id="errors">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Typed Chars</h3>
+                <p id="typed-chars">0</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="button" id="start-button">Start Test</button>
+            <button class="button" id="reset-button" disabled>Reset</button>
+        </div>
+
+        <div class="result-modal" id="result-modal">
+            <div class="modal-content">
+                <h2>Test Results</h2>
+                <div class="stats">
+                    <div class="stat-item">
+                        <h3>Final Speed (WPM)</h3>
+                        <p id="final-wpm">0</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Final Accuracy (%)</h3>
+                        <p id="final-accuracy">0</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Total Errors</h3>
+                        <p id="final-errors">0</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Raw WPM</h3>
+                        <p id="raw-wpm">0</p>
+                    </div>
+                </div>
+                <button class="button" id="modal-restart-button">Restart Test</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            "the", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog", "typing", "practice", "keyboard", "speed", "accuracy", "challenge", "learn", "javascript", "html", "css", "web", "development", "program", "computer", "science", "internet", "browser", "editor", "function", "variable", "element", "document", "style", "console", "terminal", "algorithm", "data", "structure", "network", "server", "client", "request", "response", "protocol", "security", "encryption", "database", "query", "framework", "library", "component", "module", "package", "version", "control", "repository", "commit", "branch", "merge", "pull", "push", "remote", "local", "online", "offline", "connect", "disconnect", "upload", "download", "install", "update", "delete", "create", "read", "write", "execute", "debug", "test", "deploy", "monitor", "optimize", "scale", "automate", "build", "run", "stop", "start", "restart", "configure", "setup", "manage", "organize", "design", "develop", "implement", "maintain", "support", "troubleshoot", "resolve", "solution", "problem", "issue", "error", "warning", "success", "failure", "progress", "status", "report", "log", "history", "analytics", "metric", "performance", "resource", "memory", "cpu", "disk", "bandwidth", "latency", "throughput", "reliability", "availability", "scalability", "maintainability", "usability", "flexibility", "extensibility", "portability", "security", "integrity", "confidentiality", "authentication", "authorization", "audit", "compliance", "regulation", "standard", "guideline", "best", "practice", "pattern", "design", "architecture", "model", "diagram", "flowchart", "pseudocode", "documentation", "comment", "refactor", "optimize", "debug", "test", "deploy", "monitor", "alert", "log", "trace", "profile", "benchmark", "analysis", "report", "summary", "detail", "overview", "context", "scope", "requirement", "specification", "feature", "bug", "fix", "patch", "release", "version", "update", "upgrade", "downgrade", "install", "uninstall", "setup", "configure", "customize", "personalize", "settings", "options", "preferences", "profile", "account", "user", "admin", "guest", "role", "permission", "access", "control", "security", "privacy", "data", "information", "knowledge", "wisdom", "intelligence", "learning", "education", "training", "course", "lesson", "tutorial", "guide", "manual", "book", "article", "blog", "forum", "community", "support", "help", "faq", "troubleshoot", "debug", "solve", "resolve", "fix", "repair", "restore", "backup", "recover", "archive", "compress", "decompress", "encrypt", "decrypt", "hash", "checksum", "validate", "verify", "authenticate", "authorize", "grant", "revoke", "deny", "allow", "enable", "disable", "toggle", "switch", "activate", "deactivate", "start", "stop", "pause", "resume", "cancel", "abort", "retry", "redo", "undo", "save", "load", "open", "close", "new", "edit", "delete", "copy", "cut", "paste", "select", "all", "clear", "reset", "submit", "send", "receive", "download", "upload", "import", "export", "share", "print", "preview", "zoom", "in", "out", "fit", "width", "height", "actual", "size", "fullscreen", "exit", "search", "filter", "sort", "group", "categorize", "tag", "label", "mark", "favorite", "bookmark", "pin", "hide", "show", "collapse", "expand", "move", "rename", "duplicate", "clone", "merge", "split", "join", "combine", "separate", "extract", "insert", "remove", "replace", "find", "replace", "goto", "line", "column", "character", "word", "sentence", "paragraph", "document", "file", "folder", "directory", "path", "url", "uri", "urn", "protocol", "host", "port", "query", "fragment", "scheme", "authority", "userinfo", "hostname", "pathname", "search", "hash", "origin", "protocol", "domain", "subdomain", "top-level", "second-level", "country-code", "generic", "reserved", "public", "private", "local", "global", "internal", "external", "remote", "cloud", "on-premise", "hybrid", "distributed", "centralized", "decentralized", "peer-to-peer", "client-server", "front-end", "back-end", "full-stack", "desktop", "mobile", "web", "native", "cross-platform", "hybrid", "responsive", "adaptive", "fluid", "fixed", "grid", "flexbox", "bootstrap", "material", "design", "ui", "ux", "interface", "experience", "interaction", "usability", "accessibility", "performance", "security", "scalability", "reliability", "availability", "maintainability", "testability", "extensibility", "flexibility", "portability", "reusability", "modularity", "simplicity", "consistency", "efficiency", "robustness", "error-handling", "logging", "monitoring", "debugging", "testing", "deployment", "automation", "scripting", "programming", "coding", "software", "hardware", "firmware", "middleware", "operating", "system", "kernel", "shell", "command", "line", "interface", "graphical", "user", "interface", "api", "sdk", "library", "framework", "tool", "utility", "application", "program", "service", "daemon", "process", "thread", "concurrency", "parallelism", "synchronization", "asynchronous", "callback", "promise", "async", "await", "event", "loop", "queue", "stack", "heap", "tree", "graph", "linked", "list", "array", "object", "map", "set", "iterator", "generator", "decorator", "closure", "higher-order", "function", "pure", "function", "side-effect", "idempotent", "immutable", "mutable", "state", "stateless", "stateful", "component", "props", "state", "lifecycle", "hook", "context", "provider", "consumer", "reducer", "action", "dispatch", "store", "subscribe", "unsubscribe", "middleware", "thunk", "saga", "redux", "mobx", "vuex", "angular", "react", "vue", "jquery", "lodash", "underscore", "moment", "date-fns", "axios", "fetch", "websocket", "socket.io", "graphql", "rest", "api", "json", "xml", "yaml", "csv", "tsv", "markdown", "html", "css", "javascript", "typescript", "python", "java", "csharp", "go", "rust", "php", "ruby", "swift", "kotlin", "scala", "haskell", "clojure", "lisp", "erlang", "elixir", "perl", "bash", "shell", "powershell", "sql", "nosql", "mongodb", "postgresql", "mysql", "sqlite", "redis", "cassandra", "elasticsearch", "kafka", "rabbit", "mq", "aws", "azure", "gcp", "docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "jenkins", "travis", "ci", "circleci", "github", "actions", "azure", "devops", "jira", "trello", "asana", "slack", "discord", "zoom", "google", "meet", "microsoft", "teams", "outlook", "gmail", "calendar", "drive", "docs", "sheets", "slides", "forms", "maps", "youtube", "twitter", "facebook", "instagram", "linkedin", "snapchat", "tiktok", "reddit", "pinterest", "whatsapp", "telegram", "signal", "viber", "wechat", "line", "skype", "facetime", "imessage", "sms", "email", "phone", "call", "video", "audio", "text", "message", "chat", "group", "channel", "thread", "notification", "alert", "badge", "icon", "button", "link", "input", "text", "area", "checkbox", "radio", "select", "option", "dropdown", "slider", "range", "progress", "bar", "spinner", "loader", "tooltip", "popover", "modal", "dialog", "accordion", "tabs", "carousel", "pagination", "breadcrumb", "navbar", "sidebar", "footer", "header", "main", "section", "article", "aside", "figure", "figcaption", "details", "summary", "dialog", "menu", "item", "list", "unordered", "ordered", "definition", "table", "row", "column", "cell", "caption", "thead", "tbody", "tfoot", "form", "fieldset", "legend", "label", "input", "textarea", "button", "select", "option", "datalist", "output", "meter", "progress", "img", "picture", "source", "svg", "canvas", "audio", "video", "track", "embed", "iframe", "object", "param", "map", "area", "link", "meta", "style", "script", "noscript", "template", "slot", "abbr", "address", "b", "bdi", "bdo", "blockquote", "cite", "code", "del", "dfn", "em", "i", "ins", "kbd", "mark", "q", "rp", "rt", "rtc", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "acronym", "applet", "basefont", "big", "center", "dir", "font", "frame", "frameset", "noframes", "strike", "tt"
+        ];
+
+        let testWords = [];
+        let wordIndex = 0;
+        let charIndex = 0;
+        let startTime;
+        let timerInterval;
+        let timeLeft = 60; // Default test time in seconds
+        let correctChars = 0;
+        let incorrectChars = 0;
+        let typedChars = 0;
+        let totalTypedCharacters = 0; // Includes spaces and errors
+
+        const testArea = document.getElementById('test-area');
+        const typingInput = document.getElementById('typing-input');
+        const wpmDisplay = document.getElementById('wpm');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const errorsDisplay = document.getElementById('errors');
+        const typedCharsDisplay = document.getElementById('typed-chars');
+        const countdownDisplay = document.getElementById('countdown');
+        const startButton = document.getElementById('start-button');
+        const resetButton = document.getElementById('reset-button');
+        const resultModal = document.getElementById('result-modal');
+        const finalWpmDisplay = document.getElementById('final-wpm');
+        const finalAccuracyDisplay = document.getElementById('final-accuracy');
+        const finalErrorsDisplay = document.getElementById('final-errors');
+        const rawWpmDisplay = document.getElementById('raw-wpm');
+        const modalRestartButton = document.getElementById('modal-restart-button');
+
+        function generateTestWords() {
+            testWords = [];
+            for (let i = 0; i < 150; i++) { // Generate enough words for a long test
+                testWords.push(words[Math.floor(Math.random() * words.length)]);
+            }
+        }
+
+        function renderTestWords() {
+            testArea.innerHTML = '';
+            testWords.forEach((word, wordIdx) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.classList.add('word');
+                if (wordIdx === 0) {
+                    wordSpan.classList.add('current-word');
+                }
+                word.split('').forEach(char => {
+                    const charSpan = document.createElement('span');
+                    charSpan.textContent = char;
+                    charSpan.classList.add('untyped');
+                    wordSpan.appendChild(charSpan);
+                });
+                testArea.appendChild(wordSpan);
+            });
+            // Ensure the input field is visible if it was scrolled out
+            testArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function highlightCurrentWord() {
+            const allWordSpans = testArea.querySelectorAll('.word');
+            allWordSpans.forEach((span, idx) => {
+                if (idx === wordIndex) {
+                    span.classList.add('current-word');
+                    // Scroll to current word if it goes out of view
+                    if (span.offsetLeft + span.offsetWidth > testArea.offsetWidth + testArea.scrollLeft ||
+                        span.offsetLeft < testArea.scrollLeft) {
+                        span.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
+                    }
+                } else {
+                    span.classList.remove('current-word');
+                }
+            });
+        }
+
+        function updateStats() {
+            const timeElapsed = (Date.now() - startTime) / 1000;
+            if (timeElapsed === 0) return;
+
+            // WPM calculation: (Correct Characters / 5) / (Time in Minutes)
+            const wpm = Math.round((correctChars / 5) / (timeElapsed / 60));
+            wpmDisplay.textContent = wpm;
+
+            // Raw WPM (Total Typed Characters / 5) / (Time in Minutes)
+            const rawWpm = Math.round((totalTypedCharacters / 5) / (timeElapsed / 60));
+            // This is shown in modal only
+
+            // Accuracy calculation: (Correct Chars / Total Typed Chars) * 100
+            const accuracy = typedChars === 0 ? 0 : Math.round((correctChars / typedChars) * 100);
+            accuracyDisplay.textContent = accuracy;
+            errorsDisplay.textContent = incorrectChars;
+            typedCharsDisplay.textContent = typedChars;
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                countdownDisplay.textContent = timeLeft;
+                updateStats();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endTest();
+                }
+            }, 1000);
+        }
+
+        function endTest() {
+            typingInput.disabled = true;
+            typingInput.value = '';
+            clearInterval(timerInterval);
+            updateStats(); // Final update
+
+            // Calculate final stats for modal
+            const timeElapsed = (Date.now() - startTime) / 1000;
+            const finalWPM = Math.round((correctChars / 5) / (timeElapsed / 60));
+            const finalAccuracy = typedChars === 0 ? 0 : Math.round((correctChars / typedChars) * 100);
+            const finalRawWPM = Math.round((totalTypedCharacters / 5) / (timeElapsed / 60));
+
+            finalWpmDisplay.textContent = isNaN(finalWPM) ? 0 : finalWPM;
+            finalAccuracyDisplay.textContent = isNaN(finalAccuracy) ? 0 : finalAccuracy;
+            finalErrorsDisplay.textContent = incorrectChars;
+            rawWpmDisplay.textContent = isNaN(finalRawWPM) ? 0 : finalRawWPM;
+            
+            resultModal.classList.add('show');
+            resetButton.disabled = false;
+            startButton.disabled = true;
+        }
+
+        function resetTest() {
+            clearInterval(timerInterval);
+            timeLeft = 60;
+            countdownDisplay.textContent = timeLeft;
+            wordIndex = 0;
+            charIndex = 0;
+            correctChars = 0;
+            incorrectChars = 0;
+            typedChars = 0;
+            totalTypedCharacters = 0;
+            typingInput.value = '';
+            typingInput.disabled = false;
+            startButton.disabled = false;
+            resetButton.disabled = true;
+            
+            wpmDisplay.textContent = '0';
+            accuracyDisplay.textContent = '0';
+            errorsDisplay.textContent = '0';
+            typedCharsDisplay.textContent = '0';
+
+            generateTestWords();
+            renderTestWords();
+            highlightCurrentWord(); // Highlight the first word
+            typingInput.focus();
+            resultModal.classList.remove('show');
+        }
+
+        // Event Listeners
+        startButton.addEventListener('click', () => {
+            if (!startTime) { // Start test only once
+                startTimer();
+                typingInput.focus();
+                startButton.disabled = true;
+                resetButton.disabled = false;
+            }
+        });
+
+        resetButton.addEventListener('click', resetTest);
+        modalRestartButton.addEventListener('click', resetTest);
+
+
+        typingInput.addEventListener('input', (e) => {
+            if (!startTime) {
+                // If input starts without clicking start button, automatically start test
+                startTimer();
+                startButton.disabled = true;
+                resetButton.disabled = false;
+            }
+
+            const currentWord = testWords[wordIndex];
+            const typedText = e.target.value;
+            const currentWordSpan = testArea.children[wordIndex];
+            const charSpans = currentWordSpan.children;
+
+            typedChars = typedText.length;
+            
+            // Handle backspace logic for totalTypedCharacters
+            if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteWordBackward') {
+                if (totalTypedCharacters > 0) {
+                    totalTypedCharacters--;
+                }
+            } else if (e.inputType !== 'insertLineBreak' && e.inputType !== 'insertFromPaste') { // Don't count Enter or paste as single char
+                totalTypedCharacters++;
+            }
+            
+
+            let localCorrectChars = 0;
+            let localIncorrectChars = 0;
+
+            for (let i = 0; i < currentWord.length; i++) {
+                const char = currentWord[i];
+                const typedChar = typedText[i];
+                const charSpan = charSpans[i];
+
+                if (charSpan) { // Ensure span exists
+                    charSpan.classList.remove('correct', 'incorrect', 'untyped', 'extra');
+                    if (typedChar === undefined) {
+                        charSpan.classList.add('untyped');
+                    } else if (typedChar === char) {
+                        charSpan.classList.add('correct');
+                        localCorrectChars++;
+                    } else {
+                        charSpan.classList.add('incorrect');
+                        localIncorrectChars++;
+                    }
+                }
+            }
+
+            // Handle extra characters typed
+            for (let i = currentWord.length; i < charSpans.length; i++) {
+                charSpans[i].classList.remove('correct', 'incorrect', 'untyped', 'extra');
+                charSpans[i].style.display = 'none'; // Hide extra spans
+            }
+            for (let i = currentWord.length; i < typedText.length; i++) {
+                let extraSpan = charSpans[i];
+                if (!extraSpan) {
+                    extraSpan = document.createElement('span');
+                    currentWordSpan.appendChild(extraSpan);
+                }
+                extraSpan.textContent = typedText[i];
+                extraSpan.classList.add('extra');
+                extraSpan.style.display = 'inline-block';
+            }
+
+
+            // Word completed (space or Enter pressed)
+            if (typedText.endsWith(' ')) {
+                // Update overall correct/incorrect chars only when word is finished
+                correctChars += localCorrectChars;
+                incorrectChars += (currentWord.length - localCorrectChars) + (typedText.length - (currentWord.length + 1)); // Count missing and extra
+                
+                wordIndex++;
+                charIndex = 0;
+                typingInput.value = ''; // Clear input for next word
+                highlightCurrentWord();
+            }
+
+            // Prevent scrolling
+            window.scrollTo(0, 0); 
+            
+            // Update stats
+            updateStats();
+        });
+
+        // Initialize on page load
+        resetTest();
+    </script>
+</body>
+</html>
