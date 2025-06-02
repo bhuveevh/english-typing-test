@@ -129,11 +129,40 @@
             padding: 1px 0;
             white-space: pre-wrap; /* Ensure words don't break mid-char for spaces */
         }
+        
+        /* New: Visual representation for newline character for user awareness */
+        .newline-marker {
+            display: inline-block;
+            width: 20px; /* Width to resemble a small 'enter' key */
+            height: 18px; /* Height */
+            background-color: #cfd8dc; /* Light grey */
+            border-radius: 3px;
+            margin-left: 5px; /* Space from previous word */
+            margin-right: 5px;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.8em;
+            color: #607d8b;
+            line-height: 18px; /* Center text vertically */
+            position: relative;
+            top: -2px; /* Adjust vertical position */
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .newline-marker::after {
+            content: "⏎"; /* Enter symbol */
+        }
+
 
         .current-word {
             background-color: #fff9c4; /* Light yellow for current word */
             border-radius: 4px;
             padding: 1px 5px;
+            box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
+        }
+        /* New: Highlight for current newline marker */
+        .current-newline-marker {
+            background-color: #fff9c4; /* Match word highlight */
+            border: 1px solid #ffeb3b; /* Stronger border */
             box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
         }
 
@@ -677,8 +706,8 @@
             // Since we can't run real AI on GitHub Pages without a backend,
             // we'll simulate it by picking a longer random passage from a predefined list.
             const longStories = [
-                "In a quaint village nestled between rolling hills and a winding river, lived a curious young inventor named Elara. Her days were spent tinkering with gears, wires, and strange contraptions in her small, cluttered workshop. The villagers often chuckled at her eccentricities, but they also secretly admired her unwavering dedication. One day, a fierce storm swept through the valley, knocking out power and isolating the village. Elara, with a twinkle in her eye, knew this was her moment to shine. She unveiled her latest invention: a device that could harness the raw energy of the storm itself, providing light and warmth to every home. With a flick of a switch, the village square lit up, casting a warm glow that banished the darkness and brought hope to the hearts of the people. From that day forward, Elara was no longer just a curious inventor; she was their beacon of light.",
-                "The ancient library was a labyrinth of forgotten knowledge, its shelves stretching towards a vaulted ceiling, filled with books bound in leather and imbued with the scent of aged paper. Maya, an aspiring historian, had always dreamed of uncovering its secrets. Legend spoke of a hidden chamber, accessible only to those who could decipher the riddles woven into the very architecture of the building. Armed with a dusty map and her keen intellect, Maya spent weeks tracing symbols and solving puzzles, her fingers trailing over forgotten inscriptions. Finally, a section of the wall receded with a soft click, revealing a spiral staircase descending into darkness. Below, she found not gold or jewels, but a single, illuminated tome, its pages filled with the true history of their world, a history far grander and more intricate than any she had ever read.",
+                "In a quaint village nestled between rolling hills and a winding river, lived a curious young inventor named Elara. Her days were spent tinkering with gears, wires, and strange contraptions in her small, cluttered workshop. The villagers often chuckled at her eccentricities, but they also secretly admired her unwavering dedication. One day, a fierce storm swept through the valley, knocking out power and isolating the village. Elara, with a twinkle in her eye, knew this was her moment to shine. She unveiled her latest invention: a device that could harness the raw energy of the storm itself, providing light and warmth to every home. With a flick of a switch, the village square lit up, casting a warm glow that banished the darkness and brought hope to the hearts of the people. From that day forward, Elara was no longer just a curious inventor; she was their beacon of light.\n\nShe continued her work, always striving to improve her creations. The villagers, once skeptical, now sought her advice and marvelled at her ingenuity. Elara taught them about sustainable energy and the importance of innovation. Her workshop became a hub of learning, where children gathered to watch her work and ask questions. The village, once known only for its quiet charm, became a symbol of progress and self-sufficiency, all thanks to Elara's relentless pursuit of knowledge and her generous spirit. The legacy of her inventions spread far beyond the valley, inspiring other communities to embrace a future powered by clean, renewable sources. Her story became a testament to the power of one individual to change the world.",
+                "The ancient library was a labyrinth of forgotten knowledge, its shelves stretching towards a vaulted ceiling, filled with books bound in leather and imbued with the scent of aged paper. Maya, an aspiring historian, had always dreamed of uncovering its secrets. Legend spoke of a hidden chamber, accessible only to those who could decipher the riddles woven into the very architecture of the building. Armed with a dusty map and her keen intellect, Maya spent weeks tracing symbols and solving puzzles, her fingers trailing over forgotten inscriptions. Finally, a section of the wall receded with a soft click, revealing a spiral staircase descending into darkness. Below, she found not gold or jewels, but a single, illuminated tome, its pages filled with the true history of their world, a history far grander and more intricate than any she had ever read.\n\nThe tome detailed ancient civilizations and their rise and fall, the forgotten technologies they wielded, and the philosophies that guided their lives. It wasn't merely a record of events, but a deep exploration of human nature itself. Maya realized the immense responsibility of this discovery. She dedicated her life to transcribing and disseminating its contents, ensuring that the knowledge would never again be lost to time. Her efforts sparked a new age of enlightenment, and humanity, armed with the wisdom of the past, began to build a better future.",
                 "The city of Neo-Veridia hummed with the silent thrum of hover-cars and the glow of holographic advertisements. Humans and advanced AI lived side-by-side, their lives intertwined in a complex dance of technology and tradition. Kael, a data archivist, spent his days sifting through digital remnants of the past, seeking patterns and anomalies. One evening, he stumbled upon a peculiar data stream – an encrypted message from an unknown source, speaking of a long-lost natural world, untouched by urbanization. Driven by an insatiable curiosity, Kael followed the digital breadcrumbs, leading him to an ancient, forgotten port where a single, dilapidated spacecraft awaited. It was a journey into the unknown, a quest to find the whispered legends of green forests, blue oceans, and the untamed beauty of a world before concrete and chrome."
             ];
             const shortStories = [
@@ -688,7 +717,7 @@
                 "She picked up her brush and dabbed paint onto the canvas. Colors swirled, forming landscapes and dreams. Each stroke brought a new world to life, born from her imagination and skill."
             ];
             const randomWordList = [
-                "the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog", "typing", "practice", "keyboard", "speed", "accuracy", "challenge", "learn", "javascript", "html", "css", "web", "development", "program", "computer", "science", "internet", "browser", "editor", "function", "variable", "element", "document", "style", "console", "terminal", "algorithm", "data", "structure", "network", "server", "client", "request", "response", "protocol", "security", "encryption", "database", "query", "framework", "library", "component", "module", "package", "version", "control", "repository", "commit", "branch", "merge", "pull", "push", "remote", "local", "online", "offline", "connect", "disconnect", "upload", "download", "install", "update", "delete", "create", "read", "write", "execute", "debug", "test", "deploy", "monitor", "optimize", "scale", "automate", "build", "run", "stop", "start", "restart", "configure", "setup", "manage", "organize", "design", "develop", "implement", "maintain", "support", "troubleshoot", "resolve", "solution", "problem", "issue", "error", "warning", "success", "failure", "progress", "status", "report", "log", "history", "analytics", "metric", "performance", "resource", "memory", "cpu", "disk", "bandwidth", "latency", "throughput", "reliability", "availability", "scalability", "maintainability", "usability", "flexibility", "extensibility", "portability", "security", "integrity", "confidentiality", "authentication", "authorization", "audit", "compliance", "regulation", "standard", "guideline", "best", "practice", "pattern", "design", "architecture", "model", "diagram", "flowchart", "pseudocode", "documentation", "comment", "refactor", "optimize", "debug", "test", "deploy", "monitor", "alert", "log", "trace", "profile", "benchmark", "analysis", "report", "summary", "detail", "overview", "context", "scope", "requirement", "specification", "feature", "bug", "fix", "patch", "release", "version", "update", "upgrade", "downgrade", "install", "uninstall", "setup", "configure", "customize", "personalize", "settings", "options", "preferences", "profile", "account", "user", "admin", "guest", "role", "permission", "access", "control", "security", "privacy", "data", "information", "knowledge", "wisdom", "intelligence", "learning", "education", "training", "course", "lesson", "tutorial", "guide", "manual", "book", "article", "blog", "forum", "community", "support", "help", "faq", "troubleshoot", "debug", "solve", "resolve", "fix", "repair", "restore", "backup", "recover", "archive", "compress", "decompress", "encrypt", "decrypt", "hash", "checksum", "validate", "verify", "authenticate", "authorize", "grant", "revoke", "deny", "allow", "enable", "disable", "toggle", "switch", "activate", "deactivate", "start", "stop", "pause", "resume", "cancel", "abort", "retry", "redo", "undo", "save", "load", "open", "close", "new", "edit", "delete", "copy", "cut", "paste", "select", "all", "clear", "reset", "submit", "send", "receive", "download", "upload", "import", "export", "share", "print", "preview", "zoom", "in", "out", "fit", "width", "height", "actual", "size", "fullscreen", "exit", "search", "filter", "sort", "group", "categorize", "tag", "label", "mark", "favorite", "bookmark", "pin", "hide", "show", "collapse", "expand", "move", "rename", "duplicate", "clone", "merge", "split", "join", "combine", "separate", "extract", "insert", "remove", "replace", "find", "replace", "goto", "line", "column", "character", "word", "sentence", "paragraph", "document", "file", "folder", "directory", "path", "url", "uri", "urn", "protocol", "host", "port", "query", "fragment", "scheme", "authority", "userinfo", "hostname", "pathname", "search", "hash", "origin", "protocol", "domain", "subdomain", "top-level", "second-level", "country-code", "generic", "reserved", "public", "private", "local", "global", "internal", "external", "remote", "cloud", "on-premise", "hybrid", "distributed", "centralized", "decentralized", "peer-to-peer", "client-server", "front-end", "back-end", "full-stack", "desktop", "mobile", "web", "native", "cross-platform", "hybrid", "responsive", "adaptive", "fluid", "fixed", "grid", "flexbox", "bootstrap", "material", "design", "ui", "ux", "interface", "experience", "interaction", "usability", "accessibility", "performance", "security", "scalability", "reliability", "availability", "maintainability", "testability", "extensibility", "flexibility", "portability", "reusability", "modularity", "simplicity", "consistency", "efficiency", "robustness", "error-handling", "logging", "monitoring", "debugging", "testing", "deployment", "automation", "scripting", "programming", "coding", "software", "hardware", "firmware", "middleware", "operating", "system", "kernel", "shell", "command", "line", "interface", "graphical", "user", "interface", "api", "sdk", "library", "framework", "tool", "utility", "application", "program", "service", "daemon", "process", "thread", "concurrency", "parallelism", "synchronization", "asynchronous", "callback", "promise", "async", "await", "event", "loop", "queue", "stack", "heap", "tree", "graph", "linked", "list", "array", "object", "map", "set", "iterator", "generator", "decorator", "closure", "higher-order", "function", "pure", "function", "side-effect", "idempotent", "immutable", "mutable", "state", "stateless", "stateful", "component", "props", "state", "lifecycle", "hook", "context", "provider", "consumer", "reducer", "action", "dispatch", "store", "subscribe", "unsubscribe", "middleware", "thunk", "saga", "redux", "mobx", "vuex", "angular", "react", "vue", "jquery", "lodash", "underscore", "moment", "date-fns", "axios", "fetch", "websocket", "socket.io", "graphql", "rest", "api", "json", "xml", "yaml", "csv", "tsv", "markdown", "html", "css", "javascript", "typescript", "python", "java", "csharp", "go", "rust", "php", "ruby", "swift", "kotlin", "scala", "haskell", "clojure", "lisp", "erlang", "elixir", "perl", "bash", "shell", "powershell", "sql", "nosql", "mongodb", "postgresql", "mysql", "sqlite", "redis", "cassandra", "elasticsearch", "kafka", "rabbit", "mq", "aws", "azure", "gcp", "docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "jenkins", "travis", "ci", "circleci", "github", "actions", "azure", "devops", "jira", "trello", "asana", "slack", "discord", "zoom", "google", "meet", "microsoft", "teams", "outlook", "gmail", "calendar", "drive", "docs", "sheets", "slides", "forms", "maps", "youtube", "twitter", "facebook", "instagram", "linkedin", "snapchat", "tiktok", "reddit", "pinterest", "whatsapp", "telegram", "signal", "viber", "wechat", "line", "skype", "facetime", "imessage", "sms", "email", "phone", "call", "video", "audio", "text", "message", "chat", "group", "channel", "thread", "notification", "alert", "badge", "icon", "button", "link", "input", "text", "area", "checkbox", "radio", "select", "option", "dropdown", "slider", "range", "progress", "bar", "spinner", "loader", "tooltip", "popover", "modal", "dialog", "accordion", "tabs", "carousel", "pagination", "breadcrumb", "navbar", "sidebar", "footer", "header", "main", "section", "article", "aside", "figure", "figcaption", "details", "summary", "dialog", "menu", "item", "list", "unordered", "ordered", "definition", "table", "row", "column", "cell", "caption", "thead", "tbody", "tfoot", "form", "fieldset", "legend", "label", "input", "textarea", "button", "select", "option", "datalist", "output", "meter", "progress", "img", "picture", "source", "svg", "canvas", "audio", "video", "track", "embed", "iframe", "object", "param", "map", "area", "link", "meta", "style", "script", "noscript", "template", "slot", "abbr", "address", "b", "bdi", "bdo", "blockquote", "cite", "code", "del", "dfn", "em", "i", "ins", "kbd", "mark", "q", "rp", "rt", "rtc", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "acronym", "applet", "basefont", "big", "center", "dir", "font", "frame", "frameset", "noframes", "strike", "tt"
+                "the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog", "typing", "practice", "keyboard", "speed", "accuracy", "challenge", "learn", "javascript", "html", "css", "web", "development", "program", "computer", "science", "internet", "browser", "editor", "function", "variable", "element", "document", "style", "console", "terminal", "algorithm", "data", "structure", "network", "server", "client", "request", "response", "protocol", "security", "encryption", "database", "query", "framework", "library", "component", "module", "package", "version", "control", "repository", "commit", "branch", "merge", "pull", "push", "remote", "local", "online", "offline", "connect", "disconnect", "upload", "download", "install", "update", "delete", "create", "read", "write", "execute", "debug", "test", "deploy", "monitor", "optimize", "scale", "automate", "build", "run", "stop", "start", "restart", "configure", "setup", "manage", "organize", "design", "develop", "implement", "maintain", "support", "troubleshoot", "resolve", "solution", "problem", "issue", "error", "warning", "success", "failure", "progress", "status", "report", "log", "history", "analytics", "metric", "performance", "resource", "memory", "cpu", "disk", "bandwidth", "latency", "throughput", "reliability", "availability", "scalability", "maintainability", "usability", "flexibility", "extensibility", "portability", "security", "integrity", "confidentiality", "authentication", "authorization", "audit", "compliance", "regulation", "standard", "guideline", "best", "practice", "pattern", "design", "architecture", "model", "diagram", "flowchart", "pseudocode", "documentation", "comment", "refactor", "optimize", "debug", "test", "deploy", "monitor", "alert", "log", "trace", "profile", "benchmark", "analysis", "report", "summary", "detail", "overview", "context", "scope", "requirement", "specification", "feature", "bug", "fix", "patch", "release", "version", "update", "upgrade", "downgrade", "install", "uninstall", "setup", "configure", "customize", "personalize", "settings", "options", "preferences", "profile", "account", "user", "admin", "guest", "role", "permission", "access", "control", "security", "privacy", "data", "information", "knowledge", "wisdom", "intelligence", "learning", "education", "training", "course", "lesson", "tutorial", "guide", "manual", "book", "article", "blog", "forum", "community", "support", "help", "faq", "troubleshoot", "debug", "solve", "resolve", "fix", "repair", "restore", "backup", "recover", "archive", "compress", "decompress", "encrypt", "decrypt", "hash", "checksum", "validate", "verify", "authenticate", "authorize", "grant", "revoke", "deny", "allow", "enable", "disable", "toggle", "switch", "activate", "deactivate", "start", "stop", "pause", "resume", "cancel", "abort", "retry", "redo", "undo", "save", "load", "open", "close", "new", "edit", "delete", "copy", "cut", "paste", "select", "all", "clear", "reset", "submit", "send", "receive", "download", "upload", "import", "export", "share", "print", "preview", "zoom", "in", "out", "fit", "width", "height", "actual", "size", "fullscreen", "exit", "search", "filter", "sort", "group", "categorize", "tag", "label", "mark", "favorite", "bookmark", "pin", "hide", "show", "collapse", "expand", "move", "rename", "duplicate", "clone", "merge", "split", "join", "combine", "separate", "extract", "insert", "remove", "replace", "find", "replace", "goto", "line", "column", "character", "word", "sentence", "paragraph", "document", "file", "folder", "directory", "path", "url", "uri", "urn", "protocol", "host", "port", "query", "fragment", "scheme", "authority", "userinfo", "hostname", "pathname", "search", "hash", "origin", "protocol", "domain", "subdomain", "top-level", "second-level", "country-code", "generic", "reserved", "public", "private", "local", "global", "internal", "external", "remote", "cloud", "on-premise", "hybrid", "distributed", "centralized", "decentralized", "peer-to-peer", "client-server", "front-end", "back-end", "full-stack", "desktop", "mobile", "web", "native", "cross-platform", "hybrid", "responsive", "adaptive", "fluid", "fixed", "grid", "flexbox", "bootstrap", "material", "design", "ui", "ux", "interface", "experience", "interaction", "usability", "accessibility", "performance", "security", "scalability", "reliability", "availability", "maintainability", "usability", "flexibility", "extensibility", "portability", "security", "integrity", "confidentiality", "authentication", "authorization", "audit", "compliance", "regulation", "standard", "guideline", "best", "practice", "pattern", "design", "architecture", "model", "diagram", "flowchart", "pseudocode", "documentation", "comment", "refactor", "optimize", "debug", "test", "deploy", "monitor", "alert", "log", "trace", "profile", "benchmark", "analysis", "report", "summary", "detail", "overview", "context", "scope", "requirement", "specification", "feature", "bug", "fix", "patch", "release", "version", "update", "upgrade", "downgrade", "install", "uninstall", "setup", "configure", "customize", "personalize", "settings", "options", "preferences", "profile", "account", "user", "admin", "guest", "role", "permission", "access", "control", "security", "privacy", "data", "information", "knowledge", "wisdom", "intelligence", "learning", "education", "training", "course", "lesson", "tutorial", "guide", "manual", "book", "article", "blog", "forum", "community", "support", "help", "faq", "troubleshoot", "debug", "solve", "resolve", "fix", "repair", "restore", "backup", "recover", "archive", "compress", "decompress", "encrypt", "decrypt", "hash", "checksum", "validate", "verify", "authenticate", "authorize", "grant", "revoke", "deny", "allow", "enable", "disable", "toggle", "switch", "activate", "deactivate", "start", "stop", "pause", "resume", "cancel", "abort", "retry", "redo", "undo", "save", "load", "open", "close", "new", "edit", "delete", "copy", "cut", "paste", "select", "all", "clear", "reset", "submit", "send", "receive", "download", "upload", "import", "export", "share", "print", "preview", "zoom", "in", "out", "fit", "width", "height", "actual", "size", "fullscreen", "exit", "search", "filter", "sort", "group", "categorize", "tag", "label", "mark", "favorite", "bookmark", "pin", "hide", "show", "collapse", "expand", "move", "rename", "duplicate", "clone", "merge", "split", "join", "combine", "separate", "extract", "insert", "remove", "replace", "find", "replace", "goto", "line", "column", "character", "word", "sentence", "paragraph", "document", "file", "folder", "directory", "path", "url", "uri", "urn", "protocol", "host", "port", "query", "fragment", "scheme", "authority", "userinfo", "hostname", "pathname", "search", "hash", "origin", "protocol", "domain", "subdomain", "top-level", "second-level", "country-code", "generic", "reserved", "public", "private", "local", "global", "internal", "external", "remote", "cloud", "on-premise", "hybrid", "distributed", "centralized", "decentralized", "peer-to-peer", "client-server", "front-end", "back-end", "full-stack", "desktop", "mobile", "web", "native", "cross-platform", "hybrid", "responsive", "adaptive", "fluid", "fixed", "grid", "flexbox", "bootstrap", "material", "design", "ui", "ux", "interface", "experience", "interaction", "usability", "accessibility", "performance", "security", "scalability", "reliability", "availability", "maintainability", "testability", "extensibility", "flexibility", "portability", "reusability", "modularity", "simplicity", "consistency", "efficiency", "robustness", "error-handling", "logging", "monitoring", "debugging", "testing", "deployment", "automation", "scripting", "programming", "coding", "software", "hardware", "firmware", "middleware", "operating", "system", "kernel", "shell", "command", "line", "interface", "graphical", "user", "interface", "api", "sdk", "library", "framework", "tool", "utility", "application", "program", "service", "daemon", "process", "thread", "concurrency", "parallelism", "synchronization", "asynchronous", "callback", "promise", "async", "await", "event", "loop", "queue", "stack", "heap", "tree", "graph", "linked", "list", "array", "object", "map", "set", "iterator", "generator", "decorator", "closure", "higher-order", "function", "pure", "function", "side-effect", "idempotent", "immutable", "mutable", "state", "stateless", "stateful", "component", "props", "state", "lifecycle", "hook", "context", "provider", "consumer", "reducer", "action", "dispatch", "store", "subscribe", "unsubscribe", "middleware", "thunk", "saga", "redux", "mobx", "vuex", "angular", "react", "vue", "jquery", "lodash", "underscore", "moment", "date-fns", "axios", "fetch", "websocket", "socket.io", "graphql", "rest", "api", "json", "xml", "yaml", "csv", "tsv", "markdown", "html", "css", "javascript", "typescript", "python", "java", "csharp", "go", "rust", "php", "ruby", "swift", "kotlin", "scala", "haskell", "clojure", "lisp", "erlang", "elixir", "perl", "bash", "shell", "powershell", "sql", "nosql", "mongodb", "postgresql", "mysql", "sqlite", "redis", "cassandra", "elasticsearch", "kafka", "rabbit", "mq", "aws", "azure", "gcp", "docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "jenkins", "travis", "ci", "circleci", "github", "actions", "azure", "devops", "jira", "trello", "asana", "slack", "discord", "zoom", "google", "meet", "microsoft", "teams", "outlook", "gmail", "calendar", "drive", "docs", "sheets", "slides", "forms", "maps", "youtube", "twitter", "facebook", "instagram", "linkedin", "snapchat", "tiktok", "reddit", "pinterest", "whatsapp", "telegram", "signal", "viber", "wechat", "line", "skype", "facetime", "imessage", "sms", "email", "phone", "call", "video", "audio", "text", "message", "chat", "group", "channel", "thread", "notification", "alert", "badge", "icon", "button", "link", "input", "text", "area", "checkbox", "radio", "select", "option", "dropdown", "slider", "range", "progress", "bar", "spinner", "loader", "tooltip", "popover", "modal", "dialog", "accordion", "tabs", "carousel", "pagination", "breadcrumb", "navbar", "sidebar", "footer", "header", "main", "section", "article", "aside", "figure", "figcaption", "details", "summary", "dialog", "menu", "item", "list", "unordered", "ordered", "definition", "table", "row", "column", "cell", "caption", "thead", "tbody", "tfoot", "form", "fieldset", "legend", "label", "input", "textarea", "button", "select", "option", "datalist", "output", "meter", "progress", "img", "picture", "source", "svg", "canvas", "audio", "video", "track", "embed", "iframe", "object", "param", "map", "area", "link", "meta", "style", "script", "noscript", "template", "slot", "abbr", "address", "b", "bdi", "bdo", "blockquote", "cite", "code", "del", "dfn", "em", "i", "ins", "kbd", "mark", "q", "rp", "rt", "rtc", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "acronym", "applet", "basefont", "big", "center", "dir", "font", "frame", "frameset", "noframes", "strike", "tt"
             ];
             // If random-words is selected, we combine words to form a longer story for variety
             if (lengthCategory === 'random-words') {
@@ -756,7 +785,7 @@
         let timeLeft = defaultTestDuration;
         let correctChars = 0; // Correct characters typed (for WPM/CPM)
         let incorrectChars = 0; // Incorrect characters typed
-        let typedCharsOverall = 0; // Total characters user has attempted to type
+        let typedCharsOverall = 0; // Total characters user has attempted to type (including correct and incorrect)
 
         let userTargetWPM = null;
         let userTargetAccuracy = null;
@@ -819,24 +848,18 @@
                         charSpan.classList.add('untyped');
                         wordSpan.appendChild(charSpan);
                     });
-
-                    // Add a space span after each word (except the last one in the paragraph)
-                    if (wordIdxInPara < wordsInParagraph.length - 1) {
-                        const spaceSpan = document.createElement('span');
-                        spaceSpan.textContent = ' '; // Represent space character
-                        spaceSpan.classList.add('char-space');
-                        spaceSpan.classList.add('untyped');
-                        wordSpan.appendChild(spaceSpan);
-                    }
                     paragraphDiv.appendChild(wordSpan);
                 });
 
-                // Add a newline marker if it's not the very last paragraph and there's actually content
-                // Or if it's an empty line that should be preserved visually (empty paragraph)
-                if (paraIdx < paragraphs.length -1) { // Check if it's not the last paragraph
-                    // If the current paragraph is empty or just whitespace, we still want to indicate a newline
-                    // This handles cases where user pastes multiple empty lines.
-                    testWords.push('\n'); // Special indicator for newline
+                // Add a visual newline marker and corresponding testWords entry for actual newlines
+                // This means testWords will contain actual words or the special '\n' string.
+                if (paraIdx < paragraphs.length -1) { // If it's not the last paragraph
+                    // Create a visual newline marker element
+                    const newlineMarker = document.createElement('span');
+                    newlineMarker.classList.add('newline-marker');
+                    paragraphDiv.appendChild(newlineMarker);
+                    
+                    testWords.push('\n'); // Special indicator for newline in testWords array
                 }
                 
                 testArea.appendChild(paragraphDiv);
@@ -847,118 +870,62 @@
             return true; // Indicate successful generation
         }
 
-        // This function retrieves the DOM span element for a specific "word" in testWords
-        // It needs to correctly navigate paragraphs and words within them.
-        function getDomWordSpan(targetWordIndex) {
-            let currentTraversalWordIndex = 0;
+        // This function retrieves the DOM span element for a specific "word" or newline marker in testWords
+        function getDomElementForTestItem(targetIndex) {
+            let currentTraversalIndex = 0;
             const paragraphs = testArea.querySelectorAll('.paragraph');
 
             for (let i = 0; i < paragraphs.length; i++) {
                 const paragraphDiv = paragraphs[i];
-                const wordSpans = paragraphDiv.querySelectorAll('.word');
+                const children = Array.from(paragraphDiv.children); // Get all direct children (words or newline markers)
 
-                for (let j = 0; j < wordSpans.length; j++) {
-                    if (currentTraversalWordIndex === targetWordIndex) {
-                        return wordSpans[j];
+                for (let j = 0; j < children.length; j++) {
+                    const child = children[j];
+                    if (currentTraversalIndex === targetIndex) {
+                        return child;
                     }
-                    currentTraversalWordIndex++;
-                }
-
-                // If currentTraversalWordIndex matches wordIndex, and the testWords[wordIndex] is '\n',
-                // it means we are at the end of a line/paragraph, and the "word" is the newline character.
-                // We don't have a DOM element for the newline itself, but the next logical "word"
-                // in testWords would be the first word of the next paragraph.
-                // So, if we iterated through all words in a paragraph and we expect a '\n' in testWords,
-                // we increment our traversal index to match testWords.
-                if (testWords[currentTraversalWordIndex] === '\n' && currentTraversalWordIndex === targetWordIndex) {
-                    return null; // A newline 'word' doesn't have a direct DOM span
-                }
-                 if (testWords[currentTraversalWordIndex] === '\n' && i < paragraphs.length -1) {
-                    currentTraversalWordIndex++; // Account for the '\n' in testWords
+                    currentTraversalIndex++;
                 }
             }
-            return null; // Word not found
+            return null; // Element not found
         }
 
-
         function highlightCurrentWord() {
-            // Remove highlighting from all words first
+            // Remove highlighting from all words and newline markers first
             testArea.querySelectorAll('.word').forEach(span => {
                 span.classList.remove('current-word');
             });
+            testArea.querySelectorAll('.newline-marker').forEach(marker => {
+                marker.classList.remove('current-newline-marker');
+            });
 
-            // If we are at the end of the test, or expecting a newline
-            if (wordIndex >= testWords.length || testWords[wordIndex] === '\n') {
-                adjustTestAreaScroll(); // Still adjust scroll if needed
+
+            if (wordIndex >= testWords.length) {
+                adjustTestAreaScroll(); // Still adjust scroll if needed at the end
                 return;
             }
 
-            const currentWordSpan = getDomWordSpan(wordIndex);
-            if (currentWordSpan) {
-                currentWordSpan.classList.add('current-word');
+            const currentItem = testWords[wordIndex];
+            const currentDomElement = getDomElementForTestItem(wordIndex);
+
+            if (currentItem === '\n') {
+                if (currentDomElement && currentDomElement.classList.contains('newline-marker')) {
+                    currentDomElement.classList.add('current-newline-marker');
+                    adjustTestAreaScroll();
+                }
+            } else if (currentDomElement && currentDomElement.classList.contains('word')) {
+                currentDomElement.classList.add('current-word');
                 adjustTestAreaScroll();
             }
         }
 
-
         // Function to automatically scroll the test area
         function adjustTestAreaScroll() {
-            let targetElement = null;
-
-            if (wordIndex < testWords.length) {
-                if (testWords[wordIndex] === '\n') {
-                    // If we are currently at a newline, we want to scroll to the beginning of the next paragraph
-                    // to ensure the *next* actual word is visible.
-                    let currentTraversalWordIndex = 0;
-                    const paragraphs = testArea.querySelectorAll('.paragraph');
-                    let foundCurrentParagraph = false;
-
-                    for (let i = 0; i < paragraphs.length; i++) {
-                        const paragraphDiv = paragraphs[i];
-                        const wordSpans = paragraphDiv.querySelectorAll('.word');
-
-                        for (let j = 0; j < wordSpans.length; j++) {
-                            if (currentTraversalWordIndex === wordIndex) {
-                                foundCurrentParagraph = true;
-                                break;
-                            }
-                            currentTraversalWordIndex++;
-                        }
-                        if (foundCurrentParagraph) break;
-
-                        if (testWords[currentTraversalWordIndex] === '\n' && currentTraversalWordIndex === wordIndex) {
-                            foundCurrentParagraph = true; // Found the newline
-                            // Now find the next paragraph's first word, if it exists
-                            if (i + 1 < paragraphs.length) {
-                                const nextParagraphDiv = paragraphs[i + 1];
-                                if (nextParagraphDiv.children.length > 0) {
-                                    targetElement = nextParagraphDiv.children[0]; // First word of next paragraph
-                                }
-                            }
-                            break;
-                        }
-                        if (testWords[currentTraversalWordIndex] === '\n' && i < paragraphs.length -1) {
-                            currentTraversalWordIndex++; // Account for the '\n'
-                        }
-                    }
-
-                    // If a newline is the current "word", and we found the next paragraph's first word
-                    if (targetElement) {
-                        // proceed with scrolling logic below
-                    } else {
-                        // If no next word/paragraph (end of test), no need to scroll
-                        return;
-                    }
-
-                } else {
-                    targetElement = getDomWordSpan(wordIndex);
-                }
-            }
-
-            if (!targetElement) return;
+            const currentDomElement = getDomElementForTestItem(wordIndex);
+            if (!currentDomElement) return;
 
             const testAreaRect = testArea.getBoundingClientRect();
-            const targetRect = targetElement.getBoundingClientRect();
+            const targetRect = currentDomElement.getBoundingClientRect();
 
             // Calculate vertical scroll
             // If the target element's bottom is below the test area's visible bottom
@@ -971,11 +938,13 @@
             }
         }
 
-
         function updateStats() {
             const timeElapsed = (defaultTestDuration - timeLeft);
             if (timeElapsed === 0) {
                 cpmDisplay.textContent = 0;
+                wpmDisplay.textContent = 0;
+                accuracyDisplay.textContent = 0;
+                errorsDisplay.textContent = incorrectChars;
                 return; // Avoid division by zero at start
             }
 
@@ -983,7 +952,6 @@
 
             // WPM calculation: (Correct Words / Time in Minutes)
             // A "word" is often defined as 5 characters including spaces.
-            // For more robust WPM, we can use (Correct Chars / 5)
             const currentWPM = Math.round((correctChars / 5) / minutesElapsed);
             wpmDisplay.textContent = isNaN(currentWPM) ? 0 : currentWPM;
 
@@ -995,7 +963,6 @@
             accuracyDisplay.textContent = isNaN(currentAccuracy) ? 0 : currentAccuracy;
             errorsDisplay.textContent = incorrectChars;
         }
-
 
         function startTimer() {
             startTime = Date.now();
@@ -1115,9 +1082,10 @@
             mainContent.classList.remove('content-hidden'); // Show main content
         }
 
+
         // Event Listeners
 
-        // Typing Input Listener
+        // Input event for general character typing and visual feedback
         typingInput.addEventListener('input', (e) => {
             if (!startTime) {
                 startTimer(); // Start timer on first input
@@ -1125,26 +1093,24 @@
             
             const currentExpectedItem = testWords[wordIndex];
             const typedText = e.target.value;
-            
-            // If we are expecting a newline, 'input' event won't trigger the end of the 'word'
-            // The keydown handler for Enter will handle the newline 'word' completion.
+
+            // If we are currently at a newline marker, prevent typing anything
             if (currentExpectedItem === '\n') {
-                // Any characters typed here are considered incorrect for the 'newline'
-                // and should be immediately cleared, but let's let keydown handle the full logic.
-                // For now, just ensure it doesn't break.
+                typingInput.value = ''; // Clear input immediately
+                // User must press Enter for newline
                 return; 
             }
 
             const currentWordExpected = currentExpectedItem; 
-            const currentWordSpan = getDomWordSpan(wordIndex); 
+            const currentWordSpan = getDomElementForTestItem(wordIndex); 
 
-            if (!currentWordSpan) { 
-                endTest(); // Should not happen if wordIndex is valid
+            if (!currentWordSpan || !currentWordSpan.classList.contains('word')) { 
+                // This means currentExpectedItem is not a word (e.g., it's a newline marker, or end of test)
+                // This case should ideally be handled by keydown for Space/Enter
                 return;
             }
 
-            const charSpans = Array.from(currentWordSpan.querySelectorAll('span:not(.char-space)')); 
-            const spaceSpan = currentWordSpan.querySelector('.char-space'); // Get the space span if it exists
+            const charSpans = Array.from(currentWordSpan.querySelectorAll('span')); // Get all character spans within the word
 
             // Reset all spans in current word to untyped and remove correctness classes
             charSpans.forEach(span => {
@@ -1152,18 +1118,8 @@
                 span.classList.add('untyped');
                 span.style.display = 'inline'; // Ensure they are visible
             });
-            if (spaceSpan) {
-                spaceSpan.classList.remove('correct', 'incorrect');
-                spaceSpan.classList.add('untyped');
-                spaceSpan.style.display = 'inline';
-            }
-
 
             // Update char rendering within the current word
-            // charIndex tracks how many characters of the current word have been correctly typed
-            // and charIndex is used to mark correct/incorrect.
-            let currentWordCorrectChars = 0;
-
             for (let i = 0; i < currentWordExpected.length; i++) {
                 const charExpected = currentWordExpected[i];
                 const typedChar = typedText[i];
@@ -1174,139 +1130,118 @@
                         charSpan.classList.add('untyped');
                     } else if (typedChar.toLowerCase() === charExpected.toLowerCase()) { // Case-insensitive comparison
                         charSpan.classList.add('correct');
-                        currentWordCorrectChars++;
                     } else {
                         charSpan.classList.add('incorrect');
                     }
                 }
             }
 
-            // Handle the space character (if it exists for this word)
-            if (spaceSpan) {
-                if (typedText[currentWordExpected.length] === ' ') {
-                    spaceSpan.classList.add('correct');
-                } else if (typedText[currentWordExpected.length] !== undefined) {
-                    spaceSpan.classList.add('incorrect');
-                } else {
-                    spaceSpan.classList.add('untyped');
-                }
-            }
-
-            // Handle extra characters typed (beyond the current word's length AND potential space)
+            // Handle extra characters typed (beyond the current word's length)
             // First, remove any existing extra spans
             currentWordSpan.querySelectorAll('.extra').forEach(el => el.remove());
 
             // Then, create and add new extra chars
-            const expectedCharsInDom = currentWordExpected.length + (spaceSpan ? 1 : 0);
-            if (typedText.length > expectedCharsInDom) {
-                for (let i = expectedCharsInDom; i < typedText.length; i++) {
+            if (typedText.length > currentWordExpected.length) {
+                for (let i = currentWordExpected.length; i < typedText.length; i++) {
                     const extraSpan = document.createElement('span');
                     extraSpan.textContent = typedText[i];
                     extraSpan.classList.add('extra');
                     currentWordSpan.appendChild(extraSpan);
                 }
             }
-            
-            // Check if word is completed (by typing a space or if it's the last word and matches)
-            const isLastWord = wordIndex === testWords.length - 1;
-            const typedWordIsComplete = (typedText.endsWith(' ') && typedText.trim().toLowerCase() === currentWordExpected.toLowerCase()) || 
-                                       (isLastWord && typedText.toLowerCase() === currentWordExpected.toLowerCase());
-
-            if (typedWordIsComplete) {
-                let tempCorrectCharsForWord = 0;
-                let tempIncorrectCharsForWord = 0;
-
-                // Calculate chars for the actual word part
-                for (let i = 0; i < currentWordExpected.length; i++) {
-                    if (typedText[i] && typedText[i].toLowerCase() === currentWordExpected[i].toLowerCase()) {
-                        tempCorrectCharsForWord++;
-                    } else if (typedText[i]) { // typed but incorrect
-                        tempIncorrectCharsForWord++;
-                    } else { // missed character
-                        tempIncorrectCharsForWord++;
-                    }
-                }
-
-                // Calculate chars for the space (if it exists)
-                if (spaceSpan) {
-                    if (typedText[currentWordExpected.length] === ' ') {
-                        tempCorrectCharsForWord++;
-                    } else if (typedText[currentWordExpected.length] !== undefined) {
-                        tempIncorrectCharsForWord++;
-                    } else { // Missed space
-                        tempIncorrectCharsForWord++;
-                    }
-                }
-
-                // Account for extra characters typed beyond the expected word (+ space)
-                const expectedTotalLength = currentWordExpected.length + (spaceSpan ? 1 : 0);
-                if (typedText.length > expectedTotalLength) {
-                    tempIncorrectCharsForWord += (typedText.length - expectedTotalLength);
-                }
-                
-                correctChars += tempCorrectCharsForWord;
-                incorrectChars += tempIncorrectCharsForWord;
-                typedCharsOverall += typedText.length; // Count all characters actually typed for this word
-
-                wordIndex++; // Move to next word
-                charIndex = 0; // Reset charIndex for the new word
-                typingInput.value = ''; // Clear input for next word
-                highlightCurrentWord(); // Update highlighting and scroll
-
-                if (wordIndex >= testWords.length) { // End test if all words/newlines are typed
-                    endTest();
-                    return;
-                }
-            }
-            updateStats(); // Update stats in real-time
+            updateStats();
         });
 
 
-        // Handle Enter key for custom stories with newlines
+        // Keydown event for Space and Enter
         typingInput.addEventListener('keydown', (e) => {
             if (!startTime) {
                 startTimer();
             }
 
-            if (e.key === 'Enter') {
-                const currentExpectedItem = testWords[wordIndex];
+            const currentExpectedItem = testWords[wordIndex];
+            const typedText = typingInput.value;
 
-                // Check if we are actually expecting a newline
+            if (e.key === ' ') { // Handle Spacebar
+                e.preventDefault(); // Prevent adding space to input box manually
+
+                // If currently at a newline marker, hitting space is an error
                 if (currentExpectedItem === '\n') {
-                    e.preventDefault(); // Prevent default Enter behavior (new line in input box)
+                    incorrectChars++;
+                    typedCharsOverall++;
+                    typingInput.value = ''; // Clear input
+                    updateStats();
+                    return; 
+                }
+                
+                const currentWordExpected = currentExpectedItem;
+                let wordTyped = typedText.trim(); // Get the typed word without trailing space
 
-                    // Any characters typed in the input before Enter when expecting newline are errors
-                    if (typingInput.value.length > 0) {
-                        incorrectChars += typingInput.value.length;
-                        typedCharsOverall += typingInput.value.length;
+                let tempCorrectCharsForWord = 0;
+                let tempIncorrectCharsForWord = 0;
+
+                // Compare typed word character by character with expected word
+                for (let i = 0; i < currentWordExpected.length; i++) {
+                    if (wordTyped[i] && wordTyped[i].toLowerCase() === currentWordExpected[i].toLowerCase()) {
+                        tempCorrectCharsForWord++;
+                    } else if (wordTyped[i]) { // Typed something, but it's incorrect
+                        tempIncorrectCharsForWord++;
+                    } else { // Missed character (not typed)
+                        tempIncorrectCharsForWord++;
                     }
-                    
-                    // Mark this "newline" as correctly processed
-                    correctChars++; // Count newline as one correct char for CPM/WPM calculation
-                    typedCharsOverall++; 
+                }
+                // Account for extra characters typed beyond the expected word
+                if (wordTyped.length > currentWordExpected.length) {
+                    tempIncorrectCharsForWord += (wordTyped.length - currentWordExpected.length);
+                }
+                
+                correctChars += tempCorrectCharsForWord;
+                incorrectChars += tempIncorrectCharsForWord;
+                typedCharsOverall += wordTyped.length; // Count actual chars typed for the word
+                typedCharsOverall++; // Also count the space itself as one typed character for overall calculations
+
+                wordIndex++; // Move to next item (word or newline)
+                typingInput.value = ''; // Clear input for next word
+                highlightCurrentWord(); // Update highlighting and scroll
+
+                if (wordIndex >= testWords.length) { // End test if all words/newlines are typed
+                    endTest();
+                }
+                updateStats();
+
+            } else if (e.key === 'Enter') { // Handle Enter key
+                e.preventDefault(); // Prevent default Enter behavior (new line in input box)
+
+                // If we are currently at a newline marker, and the input box is empty (or only whitespace)
+                if (currentExpectedItem === '\n') {
+                    // If anything was typed in the box before hitting Enter for a newline, it's an error.
+                    if (typedText.trim().length > 0) {
+                        incorrectChars += typedText.trim().length;
+                        typedCharsOverall += typedText.trim().length;
+                    }
+
+                    correctChars++; // Count the newline itself as one correct char
+                    typedCharsOverall++; // Count the newline as one typed char
 
                     wordIndex++; // Move past the '\n' "word"
-                    charIndex = 0; // Reset charIndex
                     typingInput.value = ''; // Clear input
                     highlightCurrentWord(); // Re-highlight (moves to next actual word)
 
                     if (wordIndex >= testWords.length) {
                         endTest();
                     }
-                    updateStats();
                 } else {
-                    // If Enter is pressed but we are not expecting a newline, it's an error
-                    e.preventDefault(); // Still prevent default, just treat as an error
-                    incorrectChars++;
-                    typedCharsOverall++;
+                    // If Enter is pressed but we are NOT expecting a newline, it's an error
+                    incorrectChars++; // Count this Enter as an error
+                    typedCharsOverall++; // Count this Enter as a typed character
                     // Optionally: flash a red background or play an error sound
                     // For now, just count the error.
-                    updateStats();
                 }
+                updateStats();
             } else if (e.key === 'Backspace') {
-                // No specific logic needed here as 'input' event re-renders everything
-                // based on the current value of typingInput.value, which implicitly
-                // handles backspaces and character removal from the visual feedback.
+                // 'input' event handles visual feedback for backspace.
+                // No need to adjust correctChars/incorrectChars here directly on keydown,
+                // as 'input' listener will recalculate based on new input.value.
             }
         });
 
