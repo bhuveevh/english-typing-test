@@ -124,23 +124,7 @@
             height: 100%;
             width: 0%; /* Initial width */
             transition: width 0.3s ease-out; /* Smooth transition for width */
-            background-color: #4CAF50; /* Default green, will be overridden by gradients */
-        }
-
-        /* Color gradients for progress bars */
-        /* Red to Green for positive stats (WPM, Accuracy, CPM, KDPH) */
-        .progress-red-to-green {
-            background: linear-gradient(to right, #f44336 0%, #ffeb3b 50%, #4CAF50 100%);
-        }
-
-        /* Green to Red for Time Left */
-        .progress-green-to-red {
-            background: linear-gradient(to right, #4CAF50 0%, #ffeb3b 50%, #f44336 100%);
-        }
-
-        /* Solid Red for Errors */
-        .progress-solid-red {
-            background-color: #f44336; /* Solid Red */
+            background-color: #e91e63; /* Single color for all progress bars */
         }
 
         /* Main Result Conclusion Progress Bar (below stats in modal) */
@@ -159,6 +143,7 @@
             width: 0%; /* Initial width */
             border-radius: 8px; /* Match container corners */
             transition: width 0.3s ease-out; /* Smooth transition for width change */
+            background-color: #e91e63; /* Single color for the overall progress bar */
         }
 
 
@@ -970,20 +955,10 @@
             return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
 
-        // Helper to set progress bar width and class for color gradients
-        function setProgressBar(element, percentage, direction) {
+        // Helper to set progress bar width
+        function setProgressBar(element, percentage) {
             element.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
-            
-            // Remove all specific color classes first to ensure only one is applied
-            element.classList.remove('progress-red-to-green', 'progress-green-to-red', 'progress-solid-red');
-
-            if (direction === 'red-to-green') {
-                element.classList.add('progress-red-to-green');
-            } else if (direction === 'green-to-red') {
-                element.classList.add('progress-green-to-red');
-            } else if (direction === 'solid-red') {
-                element.classList.add('progress-solid-red');
-            }
+            // Removed specific color classes as we now use a single background-color defined in CSS
         }
 
 
@@ -1152,35 +1127,32 @@
             if (currentCPM > highestCPM) highestCPM = currentCPM;
             if (currentKDPH > highestKDPH) highestKDPH = currentKDPH;
             
-            // WPM Progress Bar: Red to Green
-            // Max WPM for scaling: 100 WPM, or slightly more than highest achieved for dynamic range
+            // WPM Progress Bar
             const maxWPMForScale = Math.max(100, highestWPM + 20); // Add a buffer for better visual range
             let wpmProgress = (currentWPM / maxWPMForScale) * 100;
-            setProgressBar(wpmProgressBar, wpmProgress, 'red-to-green');
+            setProgressBar(wpmProgressBar, wpmProgress);
 
-            // Accuracy Progress Bar: Red to Green (0-100%)
-            setProgressBar(accuracyProgressBar, currentAccuracy, 'red-to-green');
+            // Accuracy Progress Bar (0-100%)
+            setProgressBar(accuracyProgressBar, currentAccuracy);
 
-            // Errors Progress Bar: Solid Red (More errors = wider bar)
-            // Scale based on expected characters or a fixed max for a reasonable max error count
-            // Max errors could be 10% of total expected characters, or a fixed number like 50-100
+            // Errors Progress Bar (More errors = wider bar)
             const maxErrorsForScale = Math.max(50, totalExpectedCharsInTest * 0.15); // e.g., 15% of expected chars
             const errorProgress = (totalErrors / maxErrorsForScale) * 100;
-            setProgressBar(errorsProgressBar, errorProgress, 'solid-red');
+            setProgressBar(errorsProgressBar, errorProgress);
 
-            // CPM Progress Bar: Red to Green (similar to WPM)
+            // CPM Progress Bar
             const maxCPMForScale = Math.max(500, highestCPM + 100);
             let cpmProgress = (currentCPM / maxCPMForScale) * 100;
-            setProgressBar(cpmProgressBar, cpmProgress, 'red-to-green');
+            setProgressBar(cpmProgressBar, cpmProgress);
 
-            // KDPH Progress Bar: Red to Green (similar to WPM)
+            // KDPH Progress Bar
             const maxKDPHForScale = Math.max(5000, highestKDPH + 500);
             let kdphProgress = (currentKDPH / maxKDPHForScale) * 100;
-            setProgressBar(kdphProgressBar, kdphProgress, 'red-to-green');
+            setProgressBar(kdphProgressBar, kdphProgress);
 
-            // Time Left Progress Bar: Green to Red (100%-0%)
+            // Time Left Progress Bar (100%-0%)
             const timeLeftPercentage = (timeLeft / defaultTestDuration) * 100;
-            setProgressBar(timeProgressBar, timeLeftPercentage, 'green-to-red');
+            setProgressBar(timeProgressBar, timeLeftPercentage);
         }
 
 
@@ -1320,9 +1292,8 @@
             let finalConclusionProgress = (normalizedWPM * 0.6) + (normalizedAccuracy * 0.4) - errorPenalty; // Weighted average
             finalConclusionProgress = Math.max(0, Math.min(100, finalConclusionProgress)); // Cap between 0 and 100
 
-            // Apply the gradient based on the calculated progress for the final bar
-            finalConclusionProgressBarFill.style.width = `${finalConclusionProgress}%`;
-            setProgressBar(finalConclusionProgressBarFill, finalConclusionProgress, 'red-to-green');
+            // Apply the single color for the final bar
+            setProgressBar(finalConclusionProgressBarFill, finalConclusionProgress);
 
 
             // Check and update target status
@@ -1397,13 +1368,13 @@
             cpmDisplay.textContent = '0'; 
             kdphDisplay.textContent = '0'; 
             
-            // Reset all progress bars visually
-            setProgressBar(wpmProgressBar, 0, 'red-to-green');
-            setProgressBar(accuracyProgressBar, 0, 'red-to-green');
-            setProgressBar(errorsProgressBar, 0, 'solid-red');
-            setProgressBar(cpmProgressBar, 0, 'red-to-green');
-            setProgressBar(kdphProgressBar, 0, 'red-to-green');
-            setProgressBar(timeProgressBar, 100, 'green-to-red'); // Time starts full green
+            // Reset all progress bars visually to 0% and their initial (or appropriate) fill
+            setProgressBar(wpmProgressBar, 0);
+            setProgressBar(accuracyProgressBar, 0);
+            setProgressBar(errorsProgressBar, 0);
+            setProgressBar(cpmProgressBar, 0);
+            setProgressBar(kdphProgressBar, 0);
+            setProgressBar(timeProgressBar, 100); // Time starts full
 
             restartButton.disabled = false; 
             settingsButton.disabled = false;
