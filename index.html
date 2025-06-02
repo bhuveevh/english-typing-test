@@ -82,7 +82,7 @@
         }
 
         .stat-item h3 {
-            color: #6a1b9a; /* Deep purple for sub-headers */
+            color: #673ab7; /* Deep purple for sub-headers */
             font-size: 1em;
             margin-bottom: 5px;
             font-weight: 700;
@@ -376,7 +376,7 @@
             color: #ff9800; /* Orange for CPM */
         }
         .result-value-purple {
-            color: #6a1b9a; /* Purple for Raw WPM */
+            color: #673ab7; /* Purple for Raw WPM */
         }
         .result-value-kdph {
             color: #8bc34a; /* Light green for KDPH */
@@ -761,7 +761,7 @@
         <div class="test-area" id="test-area">
             </div>
 
-        <input type="text" id="typing-input" placeholder="Start typing here..." autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input type="text" id="typing-input" placeholder="Start typing here..." autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" enterkeyhint="next">
 
         <div class="controls">
             <button class="button primary" id="restart-button">Restart Test</button>
@@ -941,6 +941,9 @@
         let correctChars = 0; 
         let totalTypedChars = 0; 
         let totalExpectedCharsInTest = 0; 
+
+        // New flag for handling mobile keyboard composition
+        let isComposing = false;
 
 
         // Detailed Error Counts
@@ -1365,6 +1368,7 @@
             highestWPM = 0; // Reset highest values
             highestCPM = 0;
             highestKDPH = 0;
+            isComposing = false; // Reset composition flag
 
 
             typingInput.value = '';
@@ -1408,16 +1412,40 @@
 
         // Event Listeners
 
+        typingInput.addEventListener('compositionstart', () => {
+            isComposing = true;
+        });
+
+        typingInput.addEventListener('compositionend', () => {
+            isComposing = false;
+            // Trigger input processing if composition has ended and there's text
+            if (typingInput.value.length > 0) {
+                processInput();
+            }
+        });
+
         typingInput.addEventListener('input', (e) => {
             if (!isTestRunning && startTime === null) {
                 startTimer(); 
             }
-            
+            // Only process input directly if not composing
+            if (!isComposing) {
+                processInput();
+            }
+        });
+
+        function processInput() {
             const currentExpectedItem = testWords[wordIndex];
-            const typedText = e.target.value;
+            const typedText = typingInput.value;
+
+            if (!currentExpectedItem) return; // Test might have ended
 
             if (currentExpectedItem === '\n') {
-                typingInput.value = ''; 
+                // If expecting a newline and user types something, clear input
+                // This prevents typing into the story text if the system doesn't auto-handle enter
+                if (typedText.length > 0) {
+                    typingInput.value = ''; // Clear input if user types instead of pressing Enter for newline
+                }
                 return; 
             }
 
@@ -1430,6 +1458,7 @@
 
             const charSpans = Array.from(currentWordSpan.querySelectorAll('span')); 
 
+            // Reset classes for current word's characters
             charSpans.forEach(span => {
                 span.classList.remove('correct', 'incorrect', 'extra');
                 span.classList.add('untyped');
@@ -1438,6 +1467,7 @@
 
             let currentWordCorrectChars = 0;
             
+            // Mark characters as correct/incorrect
             for (let i = 0; i < currentWordExpected.length; i++) {
                 const charExpected = currentWordExpected[i];
                 const typedChar = typedText[i];
@@ -1455,8 +1485,10 @@
                 }
             }
 
+            // Remove previous extra characters
             currentWordSpan.querySelectorAll('.extra').forEach(el => el.remove());
 
+            // Add new extra characters
             if (typedText.length > currentWordExpected.length) {
                 for (let i = currentWordExpected.length; i < typedText.length; i++) {
                     const extraSpan = document.createElement('span');
@@ -1466,10 +1498,10 @@
                 }
             }
             
-            charIndex = typedText.length;
+            charIndex = typedText.length; // Update charIndex based on current input length
             
             updateStats(); 
-        });
+        }
 
 
         typingInput.addEventListener('keydown', (e) => {
@@ -1477,20 +1509,29 @@
                 startTimer();
             }
 
+            // If a composition is in progress (e.g., swiping on mobile), don't process keydown events directly
+            // Wait for 'compositionend' to finalize the input.
+            if (isComposing) {
+                return;
+            }
+
             const currentExpectedItem = testWords[wordIndex];
             const typedText = typingInput.value;
 
-            if (e.key === ' ') { 
-                e.preventDefault(); 
+            // Handle Spacebar
+            if (e.key === ' ' || e.keyCode === 32 || e.which === 32) { 
+                e.preventDefault(); // Prevent default space behavior
 
+                // If expecting a newline, and user presses space, it's an incorrect space
                 if (currentExpectedItem === '\n') {
                     errors.incorrectSpace++;
-                    totalTypedChars++; 
-                    typingInput.value = ''; 
+                    totalTypedChars++; // Count the space as a typed character
+                    typingInput.value = ''; // Clear input for next word
                     updateStats();
-                    return; 
+                    return; // Do not advance wordIndex here
                 }
                 
+                // Process the word typed before the space
                 const currentWordExpected = currentExpectedItem;
                 let wordTyped = typedText; 
                 
@@ -1500,23 +1541,23 @@
                     const expectedChar = currentWordExpected[i];
                     const typedChar = wordTyped[i];
 
-                    if (typedChar === undefined) { 
+                    if (typedChar === undefined) { // Missed character in expected word
                         errors.missedChars++;
-                    } else if (expectedChar === undefined) { 
+                    } else if (expectedChar === undefined) { // Extra character typed by user
                         errors.extraChars++;
-                    } else if (typedChar !== expectedChar) { 
+                    } else if (typedChar !== expectedChar) { // Incorrect character typed
                         errors.incorrectChars++;
-                    } else { 
+                    } else { // Correct character
                         wordCorrectCharsCount++;
                     }
                 }
 
                 correctChars += wordCorrectCharsCount;
                 totalTypedChars += wordTyped.length; 
-                totalTypedChars++; 
+                totalTypedChars++; // Count the space itself as a typed character
 
-                wordIndex++; 
-                typingInput.value = ''; 
+                wordIndex++; // Move to the next word/item
+                typingInput.value = ''; // Clear input for next word
                 charIndex = 0; 
                 highlightCurrentWord(); 
 
@@ -1525,21 +1566,22 @@
                 }
                 updateStats();
 
-            } else if (e.key === 'Enter') { 
-                e.preventDefault(); 
+            // Handle Enter Key
+            } else if (e.key === 'Enter' || e.keyCode === 13 || e.which === 13) { 
+                e.preventDefault(); // Prevent default Enter behavior (e.g., new line in input)
 
                 if (currentExpectedItem === '\n') {
+                    // If user typed anything before pressing enter for a newline, count as incorrect chars
                     if (typedText.length > 0) {
                         errors.incorrectChars += typedText.length; 
                         totalTypedChars += typedText.length;
                     }
                     
-                    correctChars++; 
-                    totalTypedChars++; 
+                    correctChars++; // Count the correct 'Enter' as a correct character
+                    totalTypedChars++; // Count the 'Enter' as a typed character
                     
-
-                    wordIndex++; 
-                    typingInput.value = ''; 
+                    wordIndex++; // Move to the next word/item
+                    typingInput.value = ''; // Clear input
                     charIndex = 0; 
                     highlightCurrentWord(); 
 
@@ -1547,13 +1589,61 @@
                         endTest();
                     }
                 } else {
+                    // If not expecting a newline but user presses Enter, it's an incorrect enter
                     errors.incorrectEnter++; 
-                    totalTypedChars++; 
+                    totalTypedChars++; // Count the 'Enter' as a typed character
                 }
                 updateStats();
             } else if (e.key === 'Backspace') {
+                // Allow backspace to modify the typed text
                 if (charIndex > 0) {
                     charIndex--;
+                }
+                // The 'input' event listener will handle the visual update after backspace
+            }
+        });
+
+        // Add an event listener for when the input field loses focus
+        typingInput.addEventListener('blur', () => {
+            if (isTestRunning && typingInput.value.length > 0) {
+                // If there's text in the input field and the test is running,
+                // simulate a spacebar press to process the current word.
+                // This is a fallback for mobile keyboards that might not trigger 'keydown' for space.
+                const currentExpectedItem = testWords[wordIndex];
+                if (currentExpectedItem && currentExpectedItem !== '\n') { // Only process if it's a word
+                    // Simulate processing of the current word
+                    let wordTyped = typingInput.value;
+                    let currentWordExpected = currentExpectedItem;
+
+                    let wordCorrectCharsCount = 0;
+                    for (let i = 0; i < Math.max(currentWordExpected.length, wordTyped.length); i++) {
+                        const expectedChar = currentWordExpected[i];
+                        const typedChar = wordTyped[i];
+
+                        if (typedChar === undefined) { 
+                            errors.missedChars++;
+                        } else if (expectedChar === undefined) { 
+                            errors.extraChars++;
+                        } else if (typedChar !== expectedChar) { 
+                            errors.incorrectChars++;
+                        } else { 
+                            wordCorrectCharsCount++;
+                        }
+                    }
+
+                    correctChars += wordCorrectCharsCount;
+                    totalTypedChars += wordTyped.length; 
+                    totalTypedChars++; // Count the implied space/end-of-word
+
+                    wordIndex++; 
+                    typingInput.value = ''; 
+                    charIndex = 0; 
+                    highlightCurrentWord(); 
+
+                    if (wordIndex >= testWords.length) { 
+                        endTest();
+                    }
+                    updateStats();
                 }
             }
         });
