@@ -12,7 +12,7 @@
             if (viewportMeta) {
                 // You can experiment with different fixed widths (e.g., 992px, 1024px)
                 // 992px is a common breakpoint for desktop views in many responsive frameworks
-                viewportMeta.setAttribute('content', 'width=1200, initial-scale=0.8'); 
+                viewportMeta.setAttribute('content', 'width=1200, initial-scale=0.8');
                 // You might need to adjust initial-scale based on your design and desired zoom
             }
         }
@@ -56,15 +56,15 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* H1 स्टाइल अब अनावश्यक है, क्योंकि H1 हटा दिया गया है */
-        /* h1 {
+        /* H1 स्टाइल को बरकरार रखा गया है, भले ही HTML में कोई H1 टैग न हो */
+        h1 {
             text-align: center;
             color: #e91e63; /* Pink primary color */
             margin-bottom: 25px;
             font-family: 'Montserrat', sans-serif;
             font-size: 2.5em; /* Larger title */
             text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
-        } */
+        }
 
         /* Live Stats Area */
         .stats {
@@ -113,7 +113,7 @@
         .timer-item p {
             color: #2196f3; /* Blue for timer */
         }
-        
+
         .cpm-item p {
             color: #ff9800; /* Orange for CPM */
         }
@@ -191,7 +191,7 @@
             padding: 1px 0;
             white-space: pre-wrap; /* Ensure words don't break mid-char for spaces */
         }
-        
+
         .newline-marker {
             display: inline-block;
             width: 20px; /* Width to resemble a small 'enter' key */
@@ -565,12 +565,12 @@
             gap: 10px;
             margin-top: 15px;
         }
-        
+
         .custom-story-controls .button {
             flex-grow: 1; /* Allow buttons to grow */
             max-width: 48%; /* Adjust for spacing */
         }
-        
+
         @media (max-width: 480px) {
             .custom-story-controls .button {
                 max-width: 100%; /* Stack buttons on very small screens */
@@ -603,10 +603,10 @@
                 padding: 15px;
             }
 
-            /* H1 स्टाइल अब अनावश्यक है */
-            /* h1 {
+            /* H1 स्टाइल यहां भी बरकरार रखा गया है */
+            h1 {
                 font-size: 2em;
-            } */
+            }
 
             .stats {
                 gap: 10px;
@@ -866,7 +866,7 @@
                 let generatedText = "";
                 // Base word count for 5 minutes, adjusted for other durations
                 const baseWordCount = 500; // Increased base word count for random words
-                const targetWordCount = baseWordCount * (testDurationSelect.value / 5); 
+                const targetWordCount = baseWordCount * (testDurationSelect.value / 5);
                 for (let i = 0; i < targetWordCount; i++) {
                     generatedText += randomWordList[Math.floor(Math.random() * randomWordList.length)] + " ";
                 }
@@ -888,7 +888,7 @@
         const wpmDisplay = document.getElementById('wpm');
         const accuracyDisplay = document.getElementById('accuracy');
         const errorsDisplay = document.getElementById('errors');
-        const cpmDisplay = document.getElementById('cpm'); 
+        const cpmDisplay = document.getElementById('cpm');
         const kdphDisplay = document.getElementById('kdph');
         const countdownDisplay = document.getElementById('countdown');
         const restartButton = document.getElementById('restart-button');
@@ -898,7 +898,7 @@
         const finalAccuracyDisplay = document.getElementById('final-accuracy');
         const finalErrorsDisplay = document.getElementById('final-errors');
         const rawWpmDisplay = document.getElementById('raw-wpm');
-        const finalCpmDisplay = document.getElementById('final-cpm'); 
+        const finalCpmDisplay = document.getElementById('final-cpm');
         const finalKdphDisplay = document.getElementById('final-kdph');
         const modalRestartButton = document.getElementById('modal-restart-button');
         const modalSettingsButton = document.getElementById('modal-settings-button');
@@ -943,17 +943,17 @@
 
 
         // Global Variables
-        let testWords = []; 
+        let testWords = [];
         let wordIndex = 0;
-        let charIndex = 0; 
+        let charIndex = 0;
         let startTime;
         let timerInterval;
-        let defaultTestDuration = 5 * 60; 
+        let defaultTestDuration = 5 * 60;
         let timeLeft = defaultTestDuration;
-        
-        let correctChars = 0; 
-        let totalTypedChars = 0; 
-        let totalExpectedCharsInTest = 0; 
+
+        let correctChars = 0;
+        let totalTypedChars = 0;
+        let totalExpectedCharsInTest = 0;
 
         // New flag for handling mobile keyboard composition
         let isComposing = false;
@@ -961,19 +961,19 @@
 
         // Detailed Error Counts
         let errors = {
-            incorrectChars: 0, 
-            missedChars: 0,    
-            extraChars: 0,     
-            skippedWords: 0,   
-            extraWords: 0,     
-            incorrectEnter: 0, 
-            incorrectSpace: 0  
+            incorrectChars: 0,
+            missedChars: 0,
+            extraChars: 0,
+            skippedWords: 0,
+            extraWords: 0,
+            incorrectEnter: 0,
+            incorrectSpace: 0
         };
 
         let userTargetWPM = null;
         let userTargetAccuracy = null;
-        let currentStoryType = 'random-words'; 
-        let customStoryText = ''; 
+        let currentStoryType = 'random-words';
+        let customStoryText = '';
         let isTestRunning = false;
         let highestWPM = 0; // To track for dynamic progress bar scaling
         let highestCPM = 0;
@@ -994,14 +994,14 @@
 
 
         async function generateAndRenderTestWords() {
-            testWords = []; 
-            testArea.innerHTML = ''; 
-            totalExpectedCharsInTest = 0; 
+            testWords = [];
+            testArea.innerHTML = '';
+            totalExpectedCharsInTest = 0;
 
             let textToType = "";
 
             if (currentStoryType === 'ai-story') {
-                let lengthCategory = 'medium'; 
+                let lengthCategory = 'medium';
                 const durationMinutes = parseInt(testDurationSelect.value);
                 if (durationMinutes <= 2) {
                     lengthCategory = 'short';
@@ -1015,27 +1015,27 @@
                     alert("Please paste your custom story in the text area or select another story type.");
                     settingsOverlay.classList.add('show');
                     mainContent.classList.add('content-hidden');
-                    return false; 
+                    return false;
                 }
-            } else { 
+            } else {
                 textToType = await fetchAIGeneratedStory('random-words');
             }
 
-            const paragraphs = textToType.split(/\r?\n/); 
+            const paragraphs = textToType.split(/\r?\n/);
 
             paragraphs.forEach((paragraphText, paraIdx) => {
                 const paragraphDiv = document.createElement('div');
                 paragraphDiv.classList.add('paragraph');
 
                 // Split words in a paragraph by one or more spaces
-                const wordsWithSpaces = paragraphText.match(/\S+\s*|\s+/g) || []; 
-                
+                const wordsWithSpaces = paragraphText.match(/\S+\s*|\s+/g) || [];
+
                 wordsWithSpaces.forEach((item) => {
-                    if (item.trim() === '') { 
+                    if (item.trim() === '') {
                         totalExpectedCharsInTest += item.length;
-                    } else { 
-                        const actualWord = item.trim(); 
-                        testWords.push(actualWord); 
+                    } else {
+                        const actualWord = item.trim();
+                        testWords.push(actualWord);
                         totalExpectedCharsInTest += actualWord.length;
 
                         const wordSpan = document.createElement('span');
@@ -1046,7 +1046,7 @@
                             charSpan.classList.add('untyped');
                             wordSpan.appendChild(charSpan);
                         });
-                        
+
                         const trailingSpaces = item.substring(actualWord.length);
                         for (let i = 0; i < trailingSpaces.length; i++) {
                             const charSpan = document.createElement('span');
@@ -1054,28 +1054,28 @@
                             charSpan.classList.add('untyped');
                             wordSpan.appendChild(charSpan);
                         }
-                        totalExpectedCharsInTest += trailingSpaces.length; 
-                        
+                        totalExpectedCharsInTest += trailingSpaces.length;
+
                         paragraphDiv.appendChild(wordSpan);
                     }
                 });
 
-                if (paraIdx < paragraphs.length -1) { 
+                if (paraIdx < paragraphs.length -1) {
                     const newlineMarker = document.createElement('span');
                     newlineMarker.classList.add('newline-marker');
                     paragraphDiv.appendChild(newlineMarker);
-                    
-                    testWords.push('\n'); 
-                    totalExpectedCharsInTest++; 
+
+                    testWords.push('\n');
+                    totalExpectedCharsInTest++;
                 }
-                
+
                 testArea.appendChild(paragraphDiv);
             });
-            
+
             highlightCurrentWord();
             adjustTestAreaScroll();
             updateAllProgressBars(); // Initialize all progress bars
-            return true; 
+            return true;
         }
 
         function getDomElementForTestItem(targetIndex) {
@@ -1084,7 +1084,7 @@
 
             for (let i = 0; i < paragraphs.length; i++) {
                 const paragraphDiv = paragraphs[i];
-                const children = Array.from(paragraphDiv.children); 
+                const children = Array.from(paragraphDiv.children);
 
                 for (let j = 0; j < children.length; j++) {
                     const child = children[j];
@@ -1094,7 +1094,7 @@
                     currentTraversalIndex++;
                 }
             }
-            return null; 
+            return null;
         }
 
         function highlightCurrentWord() {
@@ -1107,7 +1107,7 @@
 
 
             if (wordIndex >= testWords.length) {
-                adjustTestAreaScroll(); 
+                adjustTestAreaScroll();
                 return;
             }
 
@@ -1133,10 +1133,10 @@
             const targetRect = currentDomElement.getBoundingClientRect();
 
             if (targetRect.bottom > testAreaRect.bottom) {
-                testArea.scrollTop += (targetRect.bottom - testAreaRect.bottom) + 10; 
+                testArea.scrollTop += (targetRect.bottom - testAreaRect.bottom) + 10;
             }
             else if (targetRect.top < testAreaRect.top) {
-                testArea.scrollTop -= (testAreaRect.top - targetRect.top) + 10; 
+                testArea.scrollTop -= (testAreaRect.top - targetRect.top) + 10;
             }
         }
 
@@ -1157,7 +1157,7 @@
             if (currentWPM > highestWPM) highestWPM = currentWPM;
             if (currentCPM > highestCPM) highestCPM = currentCPM;
             if (currentKDPH > highestKDPH) highestKDPH = currentKDPH;
-            
+
             // WPM Progress Bar
             const maxWPMForScale = Math.max(100, highestWPM + 20); // Add a buffer for better visual range
             let wpmProgress = (currentWPM / maxWPMForScale) * 100;
@@ -1195,19 +1195,19 @@
                 errorsDisplay.textContent = errors.incorrectChars + errors.missedChars + errors.extraChars + errors.skippedWords + errors.extraWords + errors.incorrectEnter + errors.incorrectSpace;
                 cpmDisplay.textContent = 0;
                 kdphDisplay.textContent = 0;
-                updateAllProgressBars(); 
-                return; 
+                updateAllProgressBars();
+                return;
             }
 
             const minutesElapsed = timeElapsed / 60;
             const hoursElapsed = timeElapsed / 3600;
 
-            const totalCalculatedErrors = errors.incorrectChars + errors.missedChars + errors.extraChars + 
+            const totalCalculatedErrors = errors.incorrectChars + errors.missedChars + errors.extraChars +
                                         (errors.skippedWords * 5) + (errors.extraWords * 5) + errors.incorrectEnter + errors.incorrectSpace;
 
 
             const netWPM = ((correctChars - totalCalculatedErrors) / 5) / minutesElapsed;
-            wpmDisplay.textContent = Math.max(0, Math.round(netWPM)); 
+            wpmDisplay.textContent = Math.max(0, Math.round(netWPM));
 
             const currentCPM = correctChars / minutesElapsed;
             cpmDisplay.textContent = isNaN(currentCPM) ? 0 : Math.round(currentCPM);
@@ -1218,10 +1218,10 @@
 
             const currentAccuracy = totalTypedChars === 0 ? 0 : Math.round((correctChars / totalTypedChars) * 100);
             accuracyDisplay.textContent = isNaN(currentAccuracy) ? 0 : currentAccuracy;
-            
+
             errorsDisplay.textContent = totalCalculatedErrors;
 
-            updateAllProgressBars(); 
+            updateAllProgressBars();
         }
 
         function startTimer() {
@@ -1244,22 +1244,22 @@
             typingInput.disabled = true;
             typingInput.value = '';
             clearInterval(timerInterval);
-            
+
             for (let i = wordIndex; i < testWords.length; i++) {
                 if (testWords[i] !== '\n') {
                     errors.skippedWords++;
                 } else {
-                    errors.missedChars++; 
+                    errors.missedChars++;
                 }
             }
 
-            updateStats(); 
+            updateStats();
 
             const timeElapsed = (defaultTestDuration - timeLeft);
             const finalMinutesElapsed = timeElapsed / 60;
             const finalHoursElapsed = timeElapsed / 3600;
 
-            if (finalMinutesElapsed === 0) { 
+            if (finalMinutesElapsed === 0) {
                  finalWpmDisplay.textContent = 0;
                  finalAccuracyDisplay.textContent = 0;
                  finalErrorsDisplay.textContent = 0;
@@ -1267,15 +1267,15 @@
                  finalCpmDisplay.textContent = 0;
                  finalKdphDisplay.textContent = 0;
             } else {
-                const totalCalculatedErrors = errors.incorrectChars + errors.missedChars + errors.extraChars + 
+                const totalCalculatedErrors = errors.incorrectChars + errors.missedChars + errors.extraChars +
                                             (errors.skippedWords * 5) + (errors.extraWords * 5) + errors.incorrectEnter + errors.incorrectSpace;
 
                 const finalNetWPM = Math.max(0, ((correctChars - totalCalculatedErrors) / 5) / finalMinutesElapsed);
                 finalWpmDisplay.textContent = Math.round(finalNetWPM);
 
-                const finalRawWPM = (totalTypedChars / 5) / finalMinutesElapsed; 
+                const finalRawWPM = (totalTypedChars / 5) / finalMinutesElapsed;
                 rawWpmDisplay.textContent = Math.round(finalRawWPM);
-                
+
                 const finalAccuracy = totalTypedChars === 0 ? 0 : Math.round((correctChars / totalTypedChars) * 100);
                 finalAccuracyDisplay.textContent = finalAccuracy;
 
@@ -1285,7 +1285,7 @@
                 const finalKDPH = correctChars / finalHoursElapsed;
                 finalKdphDisplay.textContent = Math.round(finalKDPH);
 
-                finalErrorsDisplay.textContent = totalCalculatedErrors; 
+                finalErrorsDisplay.textContent = totalCalculatedErrors;
             }
 
             errIncorrectChars.textContent = errors.incorrectChars;
@@ -1299,7 +1299,7 @@
 
             finalWpmDisplay.className = 'result-value-green';
             finalAccuracyDisplay.className = 'result-value-green';
-            finalErrorsDisplay.className = 'result-value-red'; 
+            finalErrorsDisplay.className = 'result-value-red';
             rawWpmDisplay.className = 'result-value-purple';
             finalCpmDisplay.className = 'result-value-orange';
             finalKdphDisplay.className = 'result-value-kdph';
@@ -1317,7 +1317,7 @@
             let normalizedAccuracy = accuracyScore;
 
             // Penalty for errors: e.g., 1 point deduction for every 5 errors (adjustable)
-            let errorPenalty = (totalErrors / 5) * 1; 
+            let errorPenalty = (totalErrors / 5) * 1;
             errorPenalty = Math.min(50, errorPenalty); // Cap penalty to prevent negative scores
 
             let finalConclusionProgress = (normalizedWPM * 0.6) + (normalizedAccuracy * 0.4) - errorPenalty; // Weighted average
@@ -1361,15 +1361,15 @@
 
         async function initializeTest(duration, targetWPM, targetAccuracy, storyType, customText = '') {
             clearInterval(timerInterval);
-            defaultTestDuration = duration * 60; 
+            defaultTestDuration = duration * 60;
             timeLeft = defaultTestDuration;
             countdownDisplay.textContent = formatTime(timeLeft);
             wordIndex = 0;
-            charIndex = 0; 
+            charIndex = 0;
             correctChars = 0;
             totalTypedChars = 0;
-            totalExpectedCharsInTest = 0; 
-            errors = { 
+            totalExpectedCharsInTest = 0;
+            errors = {
                 incorrectChars: 0,
                 missedChars: 0,
                 extraChars: 0,
@@ -1386,20 +1386,20 @@
 
             typingInput.value = '';
             typingInput.disabled = false;
-            startTime = null; 
+            startTime = null;
             isTestRunning = false;
-            
+
             userTargetWPM = targetWPM ? parseInt(targetWPM) : null;
             userTargetAccuracy = targetAccuracy ? parseInt(targetAccuracy) : null;
             currentStoryType = storyType;
-            customStoryText = customText; 
+            customStoryText = customText;
 
             wpmDisplay.textContent = '0';
             accuracyDisplay.textContent = '0';
             errorsDisplay.textContent = '0';
-            cpmDisplay.textContent = '0'; 
-            kdphDisplay.textContent = '0'; 
-            
+            cpmDisplay.textContent = '0';
+            kdphDisplay.textContent = '0';
+
             // Reset all progress bars visually to 0% and their initial (or appropriate) fill
             setProgressBar(wpmProgressBar, 0);
             setProgressBar(accuracyProgressBar, 0);
@@ -1408,9 +1408,9 @@
             setProgressBar(kdphProgressBar, 0);
             setProgressBar(timeProgressBar, 100); // Time starts full
 
-            restartButton.disabled = false; 
+            restartButton.disabled = false;
             settingsButton.disabled = false;
-            
+
             const generationSuccess = await generateAndRenderTestWords();
             if (!generationSuccess) {
                 return;
@@ -1418,8 +1418,8 @@
 
             typingInput.focus();
             resultModal.classList.remove('show');
-            settingsOverlay.classList.remove('show'); 
-            mainContent.classList.remove('content-hidden'); 
+            settingsOverlay.classList.remove('show');
+            mainContent.classList.remove('content-hidden');
         }
 
 
@@ -1439,7 +1439,7 @@
 
         typingInput.addEventListener('input', (e) => {
             if (!isTestRunning && startTime === null) {
-                startTimer(); 
+                startTimer();
             }
             // Only process input directly if not composing
             if (!isComposing) {
@@ -1454,42 +1454,42 @@
             if (!currentExpectedItem) return; // Test might have ended
 
             if (currentExpectedItem === '\n') {
-                // If expecting a newline and user types something, clear input
+                // If expecting a newline, and user types something, clear input
                 // This prevents typing into the story text if the system doesn't auto-handle enter
                 if (typedText.length > 0) {
                     typingInput.value = ''; // Clear input if user types instead of pressing Enter for newline
                 }
-                return; 
-            }
-
-            const currentWordExpected = currentExpectedItem; 
-            const currentWordSpan = getDomElementForTestItem(wordIndex); 
-
-            if (!currentWordSpan || !currentWordSpan.classList.contains('word')) { 
                 return;
             }
 
-            const charSpans = Array.from(currentWordSpan.querySelectorAll('span')); 
+            const currentWordExpected = currentExpectedItem;
+            const currentWordSpan = getDomElementForTestItem(wordIndex);
+
+            if (!currentWordSpan || !currentWordSpan.classList.contains('word')) {
+                return;
+            }
+
+            const charSpans = Array.from(currentWordSpan.querySelectorAll('span'));
 
             // Reset classes for current word's characters
             charSpans.forEach(span => {
                 span.classList.remove('correct', 'incorrect', 'extra');
                 span.classList.add('untyped');
-                span.style.display = 'inline'; 
+                span.style.display = 'inline';
             });
 
             let currentWordCorrectChars = 0;
-            
+
             // Mark characters as correct/incorrect
             for (let i = 0; i < currentWordExpected.length; i++) {
                 const charExpected = currentWordExpected[i];
                 const typedChar = typedText[i];
                 const charSpan = charSpans[i];
 
-                if (charSpan) { 
+                if (charSpan) {
                     if (typedChar === undefined) {
                         charSpan.classList.add('untyped');
-                    } else if (typedChar === charExpected) { 
+                    } else if (typedChar === charExpected) {
                         charSpan.classList.add('correct');
                         currentWordCorrectChars++;
                     } else {
@@ -1510,10 +1510,10 @@
                     currentWordSpan.appendChild(extraSpan);
                 }
             }
-            
+
             charIndex = typedText.length; // Update charIndex based on current input length
-            
-            updateStats(); 
+
+            updateStats();
         }
 
 
@@ -1532,7 +1532,7 @@
             const typedText = typingInput.value;
 
             // Handle Spacebar
-            if (e.key === ' ' || e.keyCode === 32 || e.which === 32) { 
+            if (e.key === ' ' || e.keyCode === 32 || e.which === 32) {
                 e.preventDefault(); // Prevent default space behavior
 
                 // If expecting a newline, and user presses space, it's an incorrect space
@@ -1543,13 +1543,13 @@
                     updateStats();
                     return; // Do not advance wordIndex here
                 }
-                
+
                 // Process the word typed before the space
                 const currentWordExpected = currentExpectedItem;
-                let wordTyped = typedText; 
-                
+                let wordTyped = typedText;
+
                 let wordCorrectCharsCount = 0;
-                
+
                 for (let i = 0; i < Math.max(currentWordExpected.length, wordTyped.length); i++) {
                     const expectedChar = currentWordExpected[i];
                     const typedChar = wordTyped[i];
@@ -1566,44 +1566,44 @@
                 }
 
                 correctChars += wordCorrectCharsCount;
-                totalTypedChars += wordTyped.length; 
+                totalTypedChars += wordTyped.length;
                 totalTypedChars++; // Count the space itself as a typed character
 
                 wordIndex++; // Move to the next word/item
                 typingInput.value = ''; // Clear input for next word
-                charIndex = 0; 
-                highlightCurrentWord(); 
+                charIndex = 0;
+                highlightCurrentWord();
 
-                if (wordIndex >= testWords.length) { 
+                if (wordIndex >= testWords.length) {
                     endTest();
                 }
                 updateStats();
 
             // Handle Enter Key
-            } else if (e.key === 'Enter' || e.keyCode === 13 || e.which === 13) { 
+            } else if (e.key === 'Enter' || e.keyCode === 13 || e.which === 13) {
                 e.preventDefault(); // Prevent default Enter behavior (e.g., new line in input)
 
                 if (currentExpectedItem === '\n') {
                     // If user typed anything before pressing enter for a newline, count as incorrect chars
                     if (typedText.length > 0) {
-                        errors.incorrectChars += typedText.length; 
+                        errors.incorrectChars += typedText.length;
                         totalTypedChars += typedText.length;
                     }
-                    
+
                     correctChars++; // Count the correct 'Enter' as a correct character
                     totalTypedChars++; // Count the 'Enter' as a typed character
-                    
+
                     wordIndex++; // Move to the next word/item
                     typingInput.value = ''; // Clear input
-                    charIndex = 0; 
-                    highlightCurrentWord(); 
+                    charIndex = 0;
+                    highlightCurrentWord();
 
                     if (wordIndex >= testWords.length) {
                         endTest();
                     }
                 } else {
                     // If not expecting a newline but user presses Enter, it's an incorrect enter
-                    errors.incorrectEnter++; 
+                    errors.incorrectEnter++;
                     totalTypedChars++; // Count the 'Enter' as a typed character
                 }
                 updateStats();
@@ -1633,27 +1633,27 @@
                         const expectedChar = currentWordExpected[i];
                         const typedChar = wordTyped[i];
 
-                        if (typedChar === undefined) { 
+                        if (typedChar === undefined) {
                             errors.missedChars++;
-                        } else if (expectedChar === undefined) { 
+                        } else if (expectedChar === undefined) {
                             errors.extraChars++;
-                        } else if (typedChar !== expectedChar) { 
+                        } else if (typedChar !== expectedChar) {
                             errors.incorrectChars++;
-                        } else { 
+                        } else {
                             wordCorrectCharsCount++;
                         }
                     }
 
                     correctChars += wordCorrectCharsCount;
-                    totalTypedChars += wordTyped.length; 
+                    totalTypedChars += wordTyped.length;
                     totalTypedChars++; // Count the implied space/end-of-word
 
-                    wordIndex++; 
-                    typingInput.value = ''; 
-                    charIndex = 0; 
-                    highlightCurrentWord(); 
+                    wordIndex++;
+                    typingInput.value = '';
+                    charIndex = 0;
+                    highlightCurrentWord();
 
-                    if (wordIndex >= testWords.length) { 
+                    if (wordIndex >= testWords.length) {
                         endTest();
                     }
                     updateStats();
@@ -1664,15 +1664,15 @@
 
         restartButton.addEventListener('click', () => {
             settingsOverlay.classList.add('show');
-            resultModal.classList.remove('show'); 
-            mainContent.classList.add('content-hidden'); 
+            resultModal.classList.remove('show');
+            mainContent.classList.add('content-hidden');
             testDurationSelect.value = defaultTestDuration / 60;
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
             storyTypeSelect.value = currentStoryType;
             if (currentStoryType === 'user-custom') {
                 customStoryArea.style.display = 'block';
-                customStoryTextarea.value = customStoryText; 
+                customStoryTextarea.value = customStoryText;
             } else {
                 customStoryArea.style.display = 'none';
             }
@@ -1680,14 +1680,14 @@
 
         settingsButton.addEventListener('click', () => {
             settingsOverlay.classList.add('show');
-            mainContent.classList.add('content-hidden'); 
+            mainContent.classList.add('content-hidden');
             testDurationSelect.value = defaultTestDuration / 60;
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
             storyTypeSelect.value = currentStoryType;
             if (currentStoryType === 'user-custom') {
                 customStoryArea.style.display = 'block';
-                customStoryTextarea.value = customStoryText; 
+                customStoryTextarea.value = customStoryText;
             } else {
                 customStoryArea.style.display = 'none';
             }
@@ -1707,24 +1707,24 @@
         });
 
         skipSettingsButton.addEventListener('click', async () => {
-            await initializeTest(5, null, null, 'random-words'); 
+            await initializeTest(5, null, null, 'random-words');
         });
 
         modalRestartButton.addEventListener('click', async () => {
-            await initializeTest(defaultTestDuration / 60, userTargetWPM, userTargetAccuracy, currentStoryType, customStoryText); 
+            await initializeTest(defaultTestDuration / 60, userTargetWPM, userTargetAccuracy, currentStoryType, customStoryText);
         });
 
         modalSettingsButton.addEventListener('click', () => {
             resultModal.classList.remove('show');
             settingsOverlay.classList.add('show');
-            mainContent.classList.add('content-hidden'); 
+            mainContent.classList.add('content-hidden');
             testDurationSelect.value = defaultTestDuration / 60;
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
             storyTypeSelect.value = currentStoryType;
             if (currentStoryType === 'user-custom') {
                 customStoryArea.style.display = 'block';
-                customStoryTextarea.value = customStoryText; 
+                customStoryTextarea.value = customStoryText;
             } else {
                 customStoryArea.style.display = 'none';
             }
@@ -1745,10 +1745,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             settingsOverlay.classList.add('show');
             mainContent.classList.add('content-hidden');
-            countdownDisplay.textContent = formatTime(defaultTestDuration); 
+            countdownDisplay.textContent = formatTime(defaultTestDuration);
             customStoryArea.style.display = 'none';
             // Initialize all progress bars to their starting state
-            updateAllProgressBars(); 
+            updateAllProgressBars();
         });
 
     </script>
