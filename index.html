@@ -123,7 +123,7 @@
         .stat-progress-bar-fill {
             height: 100%;
             width: 0%; /* Initial width */
-            transition: width 0.3s ease-out, background-color 0.3s ease-out; /* Smooth transition for width and color */
+            transition: width 0.3s ease-out; /* Smooth transition for width */
         }
 
         /* Color gradients for progress bars */
@@ -139,24 +139,20 @@
             background-color: #f44336; /* Solid Red */
         }
 
-        .progress-solid-blue {
-            background-color: #2196f3; /* Solid Blue (for KDPH etc. if desired) */
-        }
-        
-        /* Main Test Progress Bar (below stats) */
+        /* Main Result Conclusion Progress Bar (below stats in modal) */
         .overall-progress-bar-container {
             width: 100%;
             height: 15px; /* Height of the bar */
             background-color: #e0e0e0; /* Grey background for empty part */
             border-radius: 8px; /* Rounded corners */
-            margin-bottom: 20px; /* Space between bar and test area */
+            margin-top: 15px; /* Space above bar in modal */
+            margin-bottom: 20px; /* Space below bar in modal */
             overflow: hidden; /* Ensure inner bar stays within rounded corners */
         }
 
         .overall-progress-bar-fill {
             height: 100%;
             width: 0%; /* Initial width */
-            background-color: #e91e63; /* Pink fill color */
             border-radius: 8px; /* Match container corners */
             transition: width 0.3s ease-out; /* Smooth transition for width change */
         }
@@ -667,8 +663,7 @@
                 flex-basis: 100%; /* Stack error details on small screens */
                 text-align: center;
             }
-        }
-    </style>
+        </style>
 </head>
 <body>
     <div class="settings-overlay" id="settings-overlay">
@@ -758,10 +753,6 @@
             </div>
         </div>
 
-        <div class="overall-progress-bar-container">
-            <div class="overall-progress-bar-fill" id="overall-typing-progress-bar-fill"></div>
-        </div>
-
         <div class="test-area" id="test-area">
             </div>
 
@@ -775,7 +766,7 @@
         <div class="result-modal" id="result-modal">
             <div class="modal-content">
                 <h2>Test Results</h2>
-                <div class="overall-progress-bar-container" style="margin-bottom: 25px;">
+                <div class="overall-progress-bar-container">
                     <h3>Overall Performance</h3>
                     <div class="overall-progress-bar-fill" id="final-conclusion-progress-bar-fill"></div>
                 </div>
@@ -893,8 +884,7 @@
         const modalRestartButton = document.getElementById('modal-restart-button');
         const modalSettingsButton = document.getElementById('modal-settings-button');
 
-        // Overall Typing Progress Bar
-        const overallTypingProgressBarFill = document.getElementById('overall-typing-progress-bar-fill');
+        // Final Conclusion Progress Bar (only in modal)
         const finalConclusionProgressBarFill = document.getElementById('final-conclusion-progress-bar-fill');
 
 
@@ -945,7 +935,6 @@
         let correctChars = 0; 
         let totalTypedChars = 0; 
         let totalExpectedCharsInTest = 0; 
-        let totalWordsInTest = 0; 
 
 
         // Detailed Error Counts
@@ -964,7 +953,7 @@
         let currentStoryType = 'random-words'; 
         let customStoryText = ''; 
         let isTestRunning = false;
-        let highestWPM = 0; // To track for progress bar scaling
+        let highestWPM = 0; // To track for dynamic progress bar scaling
         let highestCPM = 0;
         let highestKDPH = 0;
 
@@ -976,10 +965,12 @@
             return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
 
-        // Helper to set progress bar width and class
+        // Helper to set progress bar width and class for color gradients
         function setProgressBar(element, percentage, direction) {
             element.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
-            element.classList.remove('progress-red-to-green', 'progress-green-to-red', 'progress-solid-red', 'progress-solid-blue');
+            
+            // Remove all specific color classes first to ensure only one is applied
+            element.classList.remove('progress-red-to-green', 'progress-green-to-red', 'progress-solid-red');
 
             if (direction === 'red-to-green') {
                 element.classList.add('progress-red-to-green');
@@ -987,8 +978,6 @@
                 element.classList.add('progress-green-to-red');
             } else if (direction === 'solid-red') {
                 element.classList.add('progress-solid-red');
-            } else if (direction === 'solid-blue') {
-                element.classList.add('progress-solid-blue');
             }
         }
 
@@ -997,7 +986,6 @@
             testWords = []; 
             testArea.innerHTML = ''; 
             totalExpectedCharsInTest = 0; 
-            totalWordsInTest = 0; 
 
             let textToType = "";
 
@@ -1037,7 +1025,6 @@
                     } else { 
                         const actualWord = item.trim(); 
                         testWords.push(actualWord); 
-                        totalWordsInTest++; 
                         totalExpectedCharsInTest += actualWord.length;
 
                         const wordSpan = document.createElement('span');
@@ -1069,7 +1056,6 @@
                     
                     testWords.push('\n'); 
                     totalExpectedCharsInTest++; 
-                    totalWordsInTest++; // Count newline as a "word" for overall progress
                 }
                 
                 testArea.appendChild(paragraphDiv);
@@ -1156,54 +1142,40 @@
             const currentKDPH = correctChars / (hoursElapsed || 1);
 
 
-            // Update highest WPM, CPM, KDPH for better scaling
+            // Update highest WPM, CPM, KDPH for better scaling if current value exceeds previous highest
             if (currentWPM > highestWPM) highestWPM = currentWPM;
             if (currentCPM > highestCPM) highestCPM = currentCPM;
             if (currentKDPH > highestKDPH) highestKDPH = currentKDPH;
             
-            // WPM Progress Bar: Red to Green (0-100+ WPM, scaled)
-            let wpmProgress = 0;
-            if (highestWPM > 0) {
-                wpmProgress = (currentWPM / (highestWPM + 50)) * 100; // Adding a buffer for scaling
-            } else {
-                wpmProgress = (currentWPM / 100) * 100; // Max 100 WPM default scale
-            }
+            // WPM Progress Bar: Red to Green
+            // Max WPM for scaling: 100 WPM, or slightly more than highest achieved for dynamic range
+            const maxWPMForScale = Math.max(100, highestWPM + 20); // Add a buffer for better visual range
+            let wpmProgress = (currentWPM / maxWPMForScale) * 100;
             setProgressBar(wpmProgressBar, wpmProgress, 'red-to-green');
 
             // Accuracy Progress Bar: Red to Green (0-100%)
             setProgressBar(accuracyProgressBar, currentAccuracy, 'red-to-green');
 
             // Errors Progress Bar: Solid Red (More errors = wider bar)
-            // Scale based on expected characters or words for a reasonable max error count
-            const maxErrorsExpected = Math.max(50, totalExpectedCharsInTest / 10); // Example max: 10% errors
-            const errorProgress = (totalErrors / maxErrorsExpected) * 100;
+            // Scale based on expected characters or a fixed max for a reasonable max error count
+            // Max errors could be 10% of total expected characters, or a fixed number like 50-100
+            const maxErrorsForScale = Math.max(50, totalExpectedCharsInTest * 0.15); // e.g., 15% of expected chars
+            const errorProgress = (totalErrors / maxErrorsForScale) * 100;
             setProgressBar(errorsProgressBar, errorProgress, 'solid-red');
 
             // CPM Progress Bar: Red to Green (similar to WPM)
-            let cpmProgress = 0;
-            if (highestCPM > 0) {
-                cpmProgress = (currentCPM / (highestCPM + 250)) * 100; // Adding buffer
-            } else {
-                cpmProgress = (currentCPM / 500) * 100; // Default max 500 CPM
-            }
+            const maxCPMForScale = Math.max(500, highestCPM + 100);
+            let cpmProgress = (currentCPM / maxCPMForScale) * 100;
             setProgressBar(cpmProgressBar, cpmProgress, 'red-to-green');
 
             // KDPH Progress Bar: Red to Green (similar to WPM)
-            let kdphProgress = 0;
-            if (highestKDPH > 0) {
-                kdphProgress = (currentKDPH / (highestKDPH + 500)) * 100; // Adding buffer
-            } else {
-                kdphProgress = (currentKDPH / 5000) * 100; // Default max 5000 KDPH
-            }
+            const maxKDPHForScale = Math.max(5000, highestKDPH + 500);
+            let kdphProgress = (currentKDPH / maxKDPHForScale) * 100;
             setProgressBar(kdphProgressBar, kdphProgress, 'red-to-green');
 
             // Time Left Progress Bar: Green to Red (100%-0%)
             const timeLeftPercentage = (timeLeft / defaultTestDuration) * 100;
             setProgressBar(timeProgressBar, timeLeftPercentage, 'green-to-red');
-
-            // Overall Typing Progress Bar (Based on words completed)
-            const overallTypingProgress = (wordIndex / totalWordsInTest) * 100;
-            overallTypingProgressBarFill.style.width = `${overallTypingProgress}%`;
         }
 
 
@@ -1327,28 +1299,25 @@
             // Final Conclusion Progress Bar (a weighted average of WPM and Accuracy, penalizing errors)
             let wpmScore = parseFloat(finalWpmDisplay.textContent);
             let accuracyScore = parseFloat(finalAccuracyDisplay.textContent);
-            let errorPenalty = parseFloat(finalErrorsDisplay.textContent) * 0.5; // Example penalty
+            let totalErrors = parseFloat(finalErrorsDisplay.textContent);
 
             // Normalize scores to a 0-100 range for the final bar
-            // Assuming max good WPM is 100, max accuracy 100
-            let normalizedWPM = Math.min(100, (wpmScore / 60) * 100); // Scale WPM to 60 as target
+            // Assuming a good WPM is 40-60, excellent is 80+, so scale WPM towards 100
+            let normalizedWPM = (wpmScore / 60) * 100; // Aiming for 60 WPM as a benchmark for 100% WPM score
+            normalizedWPM = Math.min(100, Math.max(0, normalizedWPM)); // Clamp between 0 and 100
+
             let normalizedAccuracy = accuracyScore;
 
-            let finalConclusionProgress = (normalizedWPM + normalizedAccuracy) / 2 - errorPenalty;
+            // Penalty for errors: e.g., 1 point deduction for every 5 errors (adjustable)
+            let errorPenalty = (totalErrors / 5) * 1; 
+            errorPenalty = Math.min(50, errorPenalty); // Cap penalty to prevent negative scores
+
+            let finalConclusionProgress = (normalizedWPM * 0.6) + (normalizedAccuracy * 0.4) - errorPenalty; // Weighted average
             finalConclusionProgress = Math.max(0, Math.min(100, finalConclusionProgress)); // Cap between 0 and 100
 
-            // Determine color based on final progress
-            let finalConclusionColorClass = '';
-            if (finalConclusionProgress >= 80) {
-                finalConclusionColorClass = 'progress-red-to-green'; // Green-ish if very good
-            } else if (finalConclusionProgress >= 50) {
-                finalConclusionColorClass = 'progress-red-to-green'; // Yellow-ish if average
-            } else {
-                finalConclusionColorClass = 'progress-red-to-green'; // Red-ish if poor
-            }
-            
+            // Apply the gradient based on the calculated progress for the final bar
             finalConclusionProgressBarFill.style.width = `${finalConclusionProgress}%`;
-            finalConclusionProgressBarFill.className = 'overall-progress-bar-fill ' + finalConclusionColorClass; // Apply the class
+            setProgressBar(finalConclusionProgressBarFill, finalConclusionProgress, 'red-to-green');
 
 
             // Check and update target status
@@ -1393,7 +1362,6 @@
             correctChars = 0;
             totalTypedChars = 0;
             totalExpectedCharsInTest = 0; 
-            totalWordsInTest = 0;
             errors = { 
                 incorrectChars: 0,
                 missedChars: 0,
@@ -1425,8 +1393,6 @@
             kdphDisplay.textContent = '0'; 
             
             // Reset all progress bars visually
-            overallTypingProgressBarFill.style.width = '0%';
-            finalConclusionProgressBarFill.style.width = '0%';
             setProgressBar(wpmProgressBar, 0, 'red-to-green');
             setProgressBar(accuracyProgressBar, 0, 'red-to-green');
             setProgressBar(errorsProgressBar, 0, 'solid-red');
