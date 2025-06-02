@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced English Typing Test for Govt. Jobs</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght=400;700&family=Source+Code+Pro:wght=400;700&family=Open+Sans:wght=400;700&display=swap" rel="stylesheet">
     <style>
         /* Basic Reset & Font Imports */
         * {
@@ -52,7 +52,7 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
         }
 
-        /* Live Stats Area (moved to top) */
+        /* Live Stats Area */
         .stats {
             display: flex;
             justify-content: space-around;
@@ -74,6 +74,11 @@
             min-width: 120px;
             flex: 1;
             border: 1px solid #f8bbd0; /* Slightly darker pink border */
+            position: relative; /* For the mini progress bars */
+            overflow: hidden; /* To keep progress bar within bounds */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .stat-item h3 {
@@ -88,24 +93,58 @@
             font-weight: bold;
             color: #e91e63; /* Pink for values */
             font-family: 'Montserrat', sans-serif;
+            margin-bottom: 8px; /* Space above mini progress bar */
         }
 
         .timer-item p {
             color: #2196f3; /* Blue for timer */
         }
         
-        /* New: Live CPM display style */
         .cpm-item p {
             color: #ff9800; /* Orange for CPM */
         }
 
-        /* New: KDPH display style */
         .kdph-item p {
             color: #8bc34a; /* Light green for KDPH */
         }
 
-        /* Progress Bar Styles */
-        .progress-bar-container {
+        /* New: Mini Progress Bars for each stat */
+        .stat-progress-bar-container {
+            width: 100%;
+            height: 6px; /* Height of the mini bar */
+            background-color: #e0e0e0; /* Grey background for empty part */
+            border-radius: 3px; /* Slightly rounded corners */
+            overflow: hidden; /* Ensure inner bar stays within rounded corners */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .stat-progress-bar-fill {
+            height: 100%;
+            width: 0%; /* Initial width */
+            transition: width 0.3s ease-out, background-color 0.3s ease-out; /* Smooth transition for width and color */
+        }
+
+        /* Color gradients for progress bars */
+        .progress-red-to-green {
+            background: linear-gradient(to right, #f44336, #ffc107, #8bc34a); /* Red, Yellow, Green */
+        }
+
+        .progress-green-to-red {
+            background: linear-gradient(to right, #8bc34a, #ffc107, #f44336); /* Green, Yellow, Red */
+        }
+
+        .progress-solid-red {
+            background-color: #f44336; /* Solid Red */
+        }
+
+        .progress-solid-blue {
+            background-color: #2196f3; /* Solid Blue (for KDPH etc. if desired) */
+        }
+        
+        /* Main Test Progress Bar (below stats) */
+        .overall-progress-bar-container {
             width: 100%;
             height: 15px; /* Height of the bar */
             background-color: #e0e0e0; /* Grey background for empty part */
@@ -114,10 +153,10 @@
             overflow: hidden; /* Ensure inner bar stays within rounded corners */
         }
 
-        .progress-bar-fill {
+        .overall-progress-bar-fill {
             height: 100%;
             width: 0%; /* Initial width */
-            background-color: #e91e63; /* Pink fill color, similar to your button */
+            background-color: #e91e63; /* Pink fill color */
             border-radius: 8px; /* Match container corners */
             transition: width 0.3s ease-out; /* Smooth transition for width change */
         }
@@ -154,7 +193,6 @@
             white-space: pre-wrap; /* Ensure words don't break mid-char for spaces */
         }
         
-        /* New: Visual representation for newline character for user awareness */
         .newline-marker {
             display: inline-block;
             width: 20px; /* Width to resemble a small 'enter' key */
@@ -183,7 +221,6 @@
             padding: 1px 5px;
             box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
         }
-        /* New: Highlight for current newline marker */
         .current-newline-marker {
             background-color: #fff9c4; /* Match word highlight */
             border: 1px solid #ffeb3b; /* Stronger border */
@@ -372,7 +409,7 @@
         .status-not-met { color: #d32f2f; } /* Red */
 
 
-        /* New: Detailed Error Stats in Modal */
+        /* Detailed Error Stats in Modal */
         .error-details {
             margin-top: 20px;
             text-align: left;
@@ -493,7 +530,7 @@
             box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.25);
         }
 
-        /* New: Custom Story Area styles */
+        /* Custom Story Area styles */
         #custom-story-area {
             display: none; /* Hidden by default */
             margin-top: 20px;
@@ -692,31 +729,37 @@
             <div class="stat-item">
                 <h3>Speed (WPM)</h3>
                 <p id="wpm">0</p>
+                <div class="stat-progress-bar-container"><div class="stat-progress-bar-fill" id="wpm-progress-bar"></div></div>
             </div>
             <div class="stat-item">
                 <h3>Accuracy (%)</h3>
                 <p id="accuracy">0</p>
+                <div class="stat-progress-bar-container"><div class="stat-progress-bar-fill" id="accuracy-progress-bar"></div></div>
             </div>
             <div class="stat-item">
                 <h3>Errors</h3>
                 <p id="errors">0</p>
+                <div class="stat-progress-bar-container"><div class="stat-progress-bar-fill" id="errors-progress-bar"></div></div>
             </div>
             <div class="stat-item cpm-item">
                 <h3>CPM</h3>
                 <p id="cpm">0</p>
+                <div class="stat-progress-bar-container"><div class="stat-progress-bar-fill" id="cpm-progress-bar"></div></div>
             </div>
             <div class="stat-item kdph-item">
                 <h3>KDPH</h3>
                 <p id="kdph">0</p>
+                <div class="stat-progress-bar-container"><div class="stat-progress-bar-fill" id="kdph-progress-bar"></div></div>
             </div>
             <div class="stat-item timer-item">
                 <h3>Time Left</h3>
                 <p id="countdown">00:00</p>
+                <div class="stat-progress-bar-container"><div class="stat-progress-bar-fill" id="time-progress-bar"></div></div>
             </div>
         </div>
 
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="live-progress-bar-fill"></div>
+        <div class="overall-progress-bar-container">
+            <div class="overall-progress-bar-fill" id="overall-typing-progress-bar-fill"></div>
         </div>
 
         <div class="test-area" id="test-area">
@@ -732,8 +775,10 @@
         <div class="result-modal" id="result-modal">
             <div class="modal-content">
                 <h2>Test Results</h2>
-                <div class="progress-bar-container" style="margin-bottom: 25px;">
-                    <div class="progress-bar-fill" id="final-progress-bar-fill" style="background-color: #4CAF50;"></div> </div>
+                <div class="overall-progress-bar-container" style="margin-bottom: 25px;">
+                    <h3>Overall Performance</h3>
+                    <div class="overall-progress-bar-fill" id="final-conclusion-progress-bar-fill"></div>
+                </div>
                 <div class="stats">
                     <div class="stat-item">
                         <h3>Final Speed (WPM)</h3>
@@ -834,7 +879,7 @@
         const accuracyDisplay = document.getElementById('accuracy');
         const errorsDisplay = document.getElementById('errors');
         const cpmDisplay = document.getElementById('cpm'); 
-        const kdphDisplay = document.getElementById('kdph'); // New KDPH display
+        const kdphDisplay = document.getElementById('kdph');
         const countdownDisplay = document.getElementById('countdown');
         const restartButton = document.getElementById('restart-button');
         const settingsButton = document.getElementById('settings-button');
@@ -844,13 +889,22 @@
         const finalErrorsDisplay = document.getElementById('final-errors');
         const rawWpmDisplay = document.getElementById('raw-wpm');
         const finalCpmDisplay = document.getElementById('final-cpm'); 
-        const finalKdphDisplay = document.getElementById('final-kdph'); // New Final KDPH display
+        const finalKdphDisplay = document.getElementById('final-kdph');
         const modalRestartButton = document.getElementById('modal-restart-button');
         const modalSettingsButton = document.getElementById('modal-settings-button');
 
-        // New Progress Bar Elements
-        const liveProgressBarFill = document.getElementById('live-progress-bar-fill');
-        const finalProgressBarFill = document.getElementById('final-progress-bar-fill');
+        // Overall Typing Progress Bar
+        const overallTypingProgressBarFill = document.getElementById('overall-typing-progress-bar-fill');
+        const finalConclusionProgressBarFill = document.getElementById('final-conclusion-progress-bar-fill');
+
+
+        // Mini Progress Bars for each stat
+        const wpmProgressBar = document.getElementById('wpm-progress-bar');
+        const accuracyProgressBar = document.getElementById('accuracy-progress-bar');
+        const errorsProgressBar = document.getElementById('errors-progress-bar');
+        const cpmProgressBar = document.getElementById('cpm-progress-bar');
+        const kdphProgressBar = document.getElementById('kdph-progress-bar');
+        const timeProgressBar = document.getElementById('time-progress-bar');
 
 
         // Settings Overlay Elements
@@ -864,7 +918,7 @@
         const wpmTargetStatus = document.getElementById('wpm-target-status');
         const accuracyTargetStatus = document.getElementById('accuracy-target-status');
 
-        // New Custom Story Elements
+        // Custom Story Elements
         const customStoryArea = document.getElementById('custom-story-area');
         const customStoryTextarea = document.getElementById('custom-story-textarea');
         const addStoryLinkButton = document.getElementById('add-story-link-button');
@@ -880,28 +934,29 @@
 
 
         // Global Variables
-        let testWords = []; // This array will hold the expected words and '\n' markers
+        let testWords = []; 
         let wordIndex = 0;
-        let charIndex = 0; // Current character index within the current word
+        let charIndex = 0; 
         let startTime;
         let timerInterval;
-        let defaultTestDuration = 5 * 60; // Default 5 minutes in seconds
+        let defaultTestDuration = 5 * 60; 
         let timeLeft = defaultTestDuration;
         
-        let correctChars = 0; // Correct characters typed (for WPM/CPM/KDPH)
-        let totalTypedChars = 0; // All characters typed by user (correct + incorrect + extra)
-        let totalExpectedCharsInTest = 0; // Total characters in the entire test passage
+        let correctChars = 0; 
+        let totalTypedChars = 0; 
+        let totalExpectedCharsInTest = 0; 
+        let totalWordsInTest = 0; 
 
 
         // Detailed Error Counts
         let errors = {
-            incorrectChars: 0, // Mismatched characters
-            missedChars: 0,    // Characters in expected word not typed by user
-            extraChars: 0,     // Characters typed by user beyond expected word length
-            skippedWords: 0,   // Words skipped by user
-            extraWords: 0,     // User typed a word not in expected text (e.g., hit space before expected word)
-            incorrectEnter: 0, // User pressed Enter when not expected newline
-            incorrectSpace: 0  // User pressed Space when expected newline
+            incorrectChars: 0, 
+            missedChars: 0,    
+            extraChars: 0,     
+            skippedWords: 0,   
+            extraWords: 0,     
+            incorrectEnter: 0, 
+            incorrectSpace: 0  
         };
 
         let userTargetWPM = null;
@@ -909,6 +964,9 @@
         let currentStoryType = 'random-words'; 
         let customStoryText = ''; 
         let isTestRunning = false;
+        let highestWPM = 0; // To track for progress bar scaling
+        let highestCPM = 0;
+        let highestKDPH = 0;
 
 
         // Utility to format time
@@ -918,10 +976,28 @@
             return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
 
+        // Helper to set progress bar width and class
+        function setProgressBar(element, percentage, direction) {
+            element.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+            element.classList.remove('progress-red-to-green', 'progress-green-to-red', 'progress-solid-red', 'progress-solid-blue');
+
+            if (direction === 'red-to-green') {
+                element.classList.add('progress-red-to-green');
+            } else if (direction === 'green-to-red') {
+                element.classList.add('progress-green-to-red');
+            } else if (direction === 'solid-red') {
+                element.classList.add('progress-solid-red');
+            } else if (direction === 'solid-blue') {
+                element.classList.add('progress-solid-blue');
+            }
+        }
+
+
         async function generateAndRenderTestWords() {
             testWords = []; 
             testArea.innerHTML = ''; 
-            totalExpectedCharsInTest = 0; // Reset for new test
+            totalExpectedCharsInTest = 0; 
+            totalWordsInTest = 0; 
 
             let textToType = "";
 
@@ -957,13 +1033,11 @@
                 
                 wordsWithSpaces.forEach((item) => {
                     if (item.trim() === '') { 
-                        // It's just a space or multiple spaces, we don't add standalone spaces to testWords
-                        // These will be handled by trailing spaces on words, or implicit spacing.
-                        // We will count them towards totalExpectedCharsInTest.
                         totalExpectedCharsInTest += item.length;
                     } else { 
                         const actualWord = item.trim(); 
                         testWords.push(actualWord); 
+                        totalWordsInTest++; 
                         totalExpectedCharsInTest += actualWord.length;
 
                         const wordSpan = document.createElement('span');
@@ -982,7 +1056,7 @@
                             charSpan.classList.add('untyped');
                             wordSpan.appendChild(charSpan);
                         }
-                        totalExpectedCharsInTest += trailingSpaces.length; // Count trailing spaces for total expected chars
+                        totalExpectedCharsInTest += trailingSpaces.length; 
                         
                         paragraphDiv.appendChild(wordSpan);
                     }
@@ -994,7 +1068,8 @@
                     paragraphDiv.appendChild(newlineMarker);
                     
                     testWords.push('\n'); 
-                    totalExpectedCharsInTest++; // Count the newline character for total expected chars
+                    totalExpectedCharsInTest++; 
+                    totalWordsInTest++; // Count newline as a "word" for overall progress
                 }
                 
                 testArea.appendChild(paragraphDiv);
@@ -1002,7 +1077,7 @@
             
             highlightCurrentWord();
             adjustTestAreaScroll();
-            updateProgressBar(); // Initialize progress bar
+            updateAllProgressBars(); // Initialize all progress bars
             return true; 
         }
 
@@ -1035,7 +1110,6 @@
 
 
             if (wordIndex >= testWords.length) {
-                // If all words are typed, still ensure test area is scrolled to the end if necessary.
                 adjustTestAreaScroll(); 
                 return;
             }
@@ -1054,7 +1128,6 @@
             }
         }
 
-        // Function to automatically scroll the test area
         function adjustTestAreaScroll() {
             const currentDomElement = getDomElementForTestItem(wordIndex);
             if (!currentDomElement) return;
@@ -1062,36 +1135,75 @@
             const testAreaRect = testArea.getBoundingClientRect();
             const targetRect = currentDomElement.getBoundingClientRect();
 
-            // Calculate vertical scroll
-            // If the target element's bottom is below the test area's visible bottom
             if (targetRect.bottom > testAreaRect.bottom) {
-                testArea.scrollTop += (targetRect.bottom - testAreaRect.bottom) + 10; // Scroll down by diff + a little buffer
+                testArea.scrollTop += (targetRect.bottom - testAreaRect.bottom) + 10; 
             }
-            // If the target element's top is above the test area's visible top
             else if (targetRect.top < testAreaRect.top) {
-                testArea.scrollTop -= (testAreaRect.top - targetRect.top) + 10; // Scroll up by diff + a little buffer
+                testArea.scrollTop -= (testAreaRect.top - targetRect.top) + 10; 
             }
         }
 
-        // New function to update the progress bar
-        function updateProgressBar() {
-            let progressPercentage = 0;
-            if (totalExpectedCharsInTest > 0) {
-                // Progress based on characters that have been correctly evaluated (typed or attempted)
-                // This means: sum of lengths of words completely processed + chars in current word.
-                let processedChars = 0;
-                for (let i = 0; i < wordIndex; i++) {
-                    const item = testWords[i];
-                    processedChars += (item === '\n' ? 1 : item.length + 1); // Add word length + space, or 1 for newline
-                }
-                // Add current typed character count if current word is not a newline
-                if (testWords[wordIndex] !== '\n') {
-                    processedChars += charIndex;
-                }
-                
-                progressPercentage = (processedChars / totalExpectedCharsInTest) * 100;
+        // New function to update all progress bars
+        function updateAllProgressBars() {
+            const timeElapsed = (defaultTestDuration - timeLeft);
+            const minutesElapsed = timeElapsed / 60;
+            const hoursElapsed = timeElapsed / 3600;
+
+            const currentWPM = Math.max(0, ((correctChars - (errors.incorrectChars + errors.missedChars + errors.extraChars + (errors.skippedWords * 5) + (errors.extraWords * 5) + errors.incorrectEnter + errors.incorrectSpace)) / 5) / (minutesElapsed || 1));
+            const currentAccuracy = totalTypedChars === 0 ? 0 : Math.round((correctChars / totalTypedChars) * 100);
+            const totalErrors = errors.incorrectChars + errors.missedChars + errors.extraChars + errors.skippedWords + errors.extraWords + errors.incorrectEnter + errors.incorrectSpace;
+            const currentCPM = correctChars / (minutesElapsed || 1);
+            const currentKDPH = correctChars / (hoursElapsed || 1);
+
+
+            // Update highest WPM, CPM, KDPH for better scaling
+            if (currentWPM > highestWPM) highestWPM = currentWPM;
+            if (currentCPM > highestCPM) highestCPM = currentCPM;
+            if (currentKDPH > highestKDPH) highestKDPH = currentKDPH;
+            
+            // WPM Progress Bar: Red to Green (0-100+ WPM, scaled)
+            let wpmProgress = 0;
+            if (highestWPM > 0) {
+                wpmProgress = (currentWPM / (highestWPM + 50)) * 100; // Adding a buffer for scaling
+            } else {
+                wpmProgress = (currentWPM / 100) * 100; // Max 100 WPM default scale
             }
-            liveProgressBarFill.style.width = `${progressPercentage}%`;
+            setProgressBar(wpmProgressBar, wpmProgress, 'red-to-green');
+
+            // Accuracy Progress Bar: Red to Green (0-100%)
+            setProgressBar(accuracyProgressBar, currentAccuracy, 'red-to-green');
+
+            // Errors Progress Bar: Solid Red (More errors = wider bar)
+            // Scale based on expected characters or words for a reasonable max error count
+            const maxErrorsExpected = Math.max(50, totalExpectedCharsInTest / 10); // Example max: 10% errors
+            const errorProgress = (totalErrors / maxErrorsExpected) * 100;
+            setProgressBar(errorsProgressBar, errorProgress, 'solid-red');
+
+            // CPM Progress Bar: Red to Green (similar to WPM)
+            let cpmProgress = 0;
+            if (highestCPM > 0) {
+                cpmProgress = (currentCPM / (highestCPM + 250)) * 100; // Adding buffer
+            } else {
+                cpmProgress = (currentCPM / 500) * 100; // Default max 500 CPM
+            }
+            setProgressBar(cpmProgressBar, cpmProgress, 'red-to-green');
+
+            // KDPH Progress Bar: Red to Green (similar to WPM)
+            let kdphProgress = 0;
+            if (highestKDPH > 0) {
+                kdphProgress = (currentKDPH / (highestKDPH + 500)) * 100; // Adding buffer
+            } else {
+                kdphProgress = (currentKDPH / 5000) * 100; // Default max 5000 KDPH
+            }
+            setProgressBar(kdphProgressBar, kdphProgress, 'red-to-green');
+
+            // Time Left Progress Bar: Green to Red (100%-0%)
+            const timeLeftPercentage = (timeLeft / defaultTestDuration) * 100;
+            setProgressBar(timeProgressBar, timeLeftPercentage, 'green-to-red');
+
+            // Overall Typing Progress Bar (Based on words completed)
+            const overallTypingProgress = (wordIndex / totalWordsInTest) * 100;
+            overallTypingProgressBarFill.style.width = `${overallTypingProgress}%`;
         }
 
 
@@ -1103,7 +1215,7 @@
                 errorsDisplay.textContent = errors.incorrectChars + errors.missedChars + errors.extraChars + errors.skippedWords + errors.extraWords + errors.incorrectEnter + errors.incorrectSpace;
                 cpmDisplay.textContent = 0;
                 kdphDisplay.textContent = 0;
-                updateProgressBar(); // Keep progress bar updated even if stats are 0
+                updateAllProgressBars(); 
                 return; 
             }
 
@@ -1114,28 +1226,22 @@
                                         (errors.skippedWords * 5) + (errors.extraWords * 5) + errors.incorrectEnter + errors.incorrectSpace;
 
 
-            // Net WPM: (Correct Characters - Total Errors) / 5 / minutes
             const netWPM = ((correctChars - totalCalculatedErrors) / 5) / minutesElapsed;
-            wpmDisplay.textContent = Math.max(0, Math.round(netWPM)); // WPM can't be negative
+            wpmDisplay.textContent = Math.max(0, Math.round(netWPM)); 
 
-            // CPM calculation: Total Correct Characters / (Time in Minutes)
             const currentCPM = correctChars / minutesElapsed;
             cpmDisplay.textContent = isNaN(currentCPM) ? 0 : Math.round(currentCPM);
 
-            // KDPH calculation: (Total Correct Key Strokes / Time in Hours)
-            // Each correct char, space, and correct enter is a key stroke.
             const currentKDPH = (correctChars / hoursElapsed);
             kdphDisplay.textContent = isNaN(currentKDPH) ? 0 : Math.round(currentKDPH);
 
 
-            // Accuracy calculation: (Correctly typed chars / Total chars attempted) * 100
             const currentAccuracy = totalTypedChars === 0 ? 0 : Math.round((correctChars / totalTypedChars) * 100);
             accuracyDisplay.textContent = isNaN(currentAccuracy) ? 0 : currentAccuracy;
             
-            // Total Errors for display
             errorsDisplay.textContent = totalCalculatedErrors;
 
-            updateProgressBar(); // Update progress bar with live typing progress
+            updateAllProgressBars(); 
         }
 
         function startTimer() {
@@ -1159,24 +1265,21 @@
             typingInput.value = '';
             clearInterval(timerInterval);
             
-            // Final calculation for remaining untyped words
             for (let i = wordIndex; i < testWords.length; i++) {
                 if (testWords[i] !== '\n') {
                     errors.skippedWords++;
                 } else {
-                    // if a newline was expected but not typed, count as a missed char or similar
                     errors.missedChars++; 
                 }
             }
 
-            updateStats(); // Final update to ensure all metrics are current
+            updateStats(); 
 
             const timeElapsed = (defaultTestDuration - timeLeft);
             const finalMinutesElapsed = timeElapsed / 60;
             const finalHoursElapsed = timeElapsed / 3600;
 
-            // Handle potential division by zero if test ended immediately for some reason
-            if (finalMinutesElapsed === 0) { // If timeElapsed is 0, test ended instantly
+            if (finalMinutesElapsed === 0) { 
                  finalWpmDisplay.textContent = 0;
                  finalAccuracyDisplay.textContent = 0;
                  finalErrorsDisplay.textContent = 0;
@@ -1184,15 +1287,13 @@
                  finalCpmDisplay.textContent = 0;
                  finalKdphDisplay.textContent = 0;
             } else {
-                // Total errors for penalty in Net WPM calculation
                 const totalCalculatedErrors = errors.incorrectChars + errors.missedChars + errors.extraChars + 
                                             (errors.skippedWords * 5) + (errors.extraWords * 5) + errors.incorrectEnter + errors.incorrectSpace;
 
-                // Net WPM: (Correct Characters - Total Errors) / 5 / minutes
                 const finalNetWPM = Math.max(0, ((correctChars - totalCalculatedErrors) / 5) / finalMinutesElapsed);
                 finalWpmDisplay.textContent = Math.round(finalNetWPM);
 
-                const finalRawWPM = (totalTypedChars / 5) / finalMinutesElapsed; // All chars user typed / 5 / minutes
+                const finalRawWPM = (totalTypedChars / 5) / finalMinutesElapsed; 
                 rawWpmDisplay.textContent = Math.round(finalRawWPM);
                 
                 const finalAccuracy = totalTypedChars === 0 ? 0 : Math.round((correctChars / totalTypedChars) * 100);
@@ -1204,10 +1305,9 @@
                 const finalKDPH = correctChars / finalHoursElapsed;
                 finalKdphDisplay.textContent = Math.round(finalKDPH);
 
-                finalErrorsDisplay.textContent = totalCalculatedErrors; // Sum of all error categories
+                finalErrorsDisplay.textContent = totalCalculatedErrors; 
             }
 
-            // Set detailed error stats in modal
             errIncorrectChars.textContent = errors.incorrectChars;
             errMissedChars.textContent = errors.missedChars;
             errExtraChars.textContent = errors.extraChars;
@@ -1217,7 +1317,6 @@
             errIncorrectSpace.textContent = errors.incorrectSpace;
 
 
-            // Add color to final results
             finalWpmDisplay.className = 'result-value-green';
             finalAccuracyDisplay.className = 'result-value-green';
             finalErrorsDisplay.className = 'result-value-red'; 
@@ -1225,13 +1324,31 @@
             finalCpmDisplay.className = 'result-value-orange';
             finalKdphDisplay.className = 'result-value-kdph';
 
+            // Final Conclusion Progress Bar (a weighted average of WPM and Accuracy, penalizing errors)
+            let wpmScore = parseFloat(finalWpmDisplay.textContent);
+            let accuracyScore = parseFloat(finalAccuracyDisplay.textContent);
+            let errorPenalty = parseFloat(finalErrorsDisplay.textContent) * 0.5; // Example penalty
 
-            // Update Final Progress Bar based on correct completion
-            let finalProgressPercentage = 0;
-            if (totalExpectedCharsInTest > 0) {
-                finalProgressPercentage = (correctChars / totalExpectedCharsInTest) * 100;
+            // Normalize scores to a 0-100 range for the final bar
+            // Assuming max good WPM is 100, max accuracy 100
+            let normalizedWPM = Math.min(100, (wpmScore / 60) * 100); // Scale WPM to 60 as target
+            let normalizedAccuracy = accuracyScore;
+
+            let finalConclusionProgress = (normalizedWPM + normalizedAccuracy) / 2 - errorPenalty;
+            finalConclusionProgress = Math.max(0, Math.min(100, finalConclusionProgress)); // Cap between 0 and 100
+
+            // Determine color based on final progress
+            let finalConclusionColorClass = '';
+            if (finalConclusionProgress >= 80) {
+                finalConclusionColorClass = 'progress-red-to-green'; // Green-ish if very good
+            } else if (finalConclusionProgress >= 50) {
+                finalConclusionColorClass = 'progress-red-to-green'; // Yellow-ish if average
+            } else {
+                finalConclusionColorClass = 'progress-red-to-green'; // Red-ish if poor
             }
-            finalProgressBarFill.style.width = `${finalProgressPercentage}%`;
+            
+            finalConclusionProgressBarFill.style.width = `${finalConclusionProgress}%`;
+            finalConclusionProgressBarFill.className = 'overall-progress-bar-fill ' + finalConclusionColorClass; // Apply the class
 
 
             // Check and update target status
@@ -1275,8 +1392,9 @@
             charIndex = 0; 
             correctChars = 0;
             totalTypedChars = 0;
-            totalExpectedCharsInTest = 0; // Reset
-            errors = { // Reset all error counts
+            totalExpectedCharsInTest = 0; 
+            totalWordsInTest = 0;
+            errors = { 
                 incorrectChars: 0,
                 missedChars: 0,
                 extraChars: 0,
@@ -1285,6 +1403,10 @@
                 incorrectEnter: 0,
                 incorrectSpace: 0
             };
+            highestWPM = 0; // Reset highest values
+            highestCPM = 0;
+            highestKDPH = 0;
+
 
             typingInput.value = '';
             typingInput.disabled = false;
@@ -1302,10 +1424,15 @@
             cpmDisplay.textContent = '0'; 
             kdphDisplay.textContent = '0'; 
             
-            // Reset progress bars visually
-            liveProgressBarFill.style.width = '0%';
-            finalProgressBarFill.style.width = '0%';
-
+            // Reset all progress bars visually
+            overallTypingProgressBarFill.style.width = '0%';
+            finalConclusionProgressBarFill.style.width = '0%';
+            setProgressBar(wpmProgressBar, 0, 'red-to-green');
+            setProgressBar(accuracyProgressBar, 0, 'red-to-green');
+            setProgressBar(errorsProgressBar, 0, 'solid-red');
+            setProgressBar(cpmProgressBar, 0, 'red-to-green');
+            setProgressBar(kdphProgressBar, 0, 'red-to-green');
+            setProgressBar(timeProgressBar, 100, 'green-to-red'); // Time starts full green
 
             restartButton.disabled = false; 
             settingsButton.disabled = false;
@@ -1332,7 +1459,6 @@
             const currentExpectedItem = testWords[wordIndex];
             const typedText = e.target.value;
 
-            // If we are currently at a newline marker, prevent typing anything
             if (currentExpectedItem === '\n') {
                 typingInput.value = ''; 
                 return; 
@@ -1347,18 +1473,14 @@
 
             const charSpans = Array.from(currentWordSpan.querySelectorAll('span')); 
 
-            // Reset all spans in current word to untyped and remove correctness classes
             charSpans.forEach(span => {
                 span.classList.remove('correct', 'incorrect', 'extra');
                 span.classList.add('untyped');
                 span.style.display = 'inline'; 
             });
 
-            // Update char rendering within the current word
-            // Calculate real-time feedback and update `correctChars` and `totalTypedChars` for live stats
             let currentWordCorrectChars = 0;
             
-            // Handle expected characters
             for (let i = 0; i < currentWordExpected.length; i++) {
                 const charExpected = currentWordExpected[i];
                 const typedChar = typedText[i];
@@ -1376,7 +1498,6 @@
                 }
             }
 
-            // Handle extra characters typed (beyond the current word's length)
             currentWordSpan.querySelectorAll('.extra').forEach(el => el.remove());
 
             if (typedText.length > currentWordExpected.length) {
@@ -1390,11 +1511,10 @@
             
             charIndex = typedText.length;
             
-            updateStats(); // Update stats and progress bar
+            updateStats(); 
         });
 
 
-        // Keydown event for Space and Enter
         typingInput.addEventListener('keydown', (e) => {
             if (!isTestRunning && startTime === null) {
                 startTimer();
@@ -1406,7 +1526,6 @@
             if (e.key === ' ') { 
                 e.preventDefault(); 
 
-                // If currently at a newline marker, hitting space is an error
                 if (currentExpectedItem === '\n') {
                     errors.incorrectSpace++;
                     totalTypedChars++; 
@@ -1437,7 +1556,7 @@
 
                 correctChars += wordCorrectCharsCount;
                 totalTypedChars += wordTyped.length; 
-                totalTypedChars++; // Account for the space itself
+                totalTypedChars++; 
 
                 wordIndex++; 
                 typingInput.value = ''; 
@@ -1453,7 +1572,6 @@
                 e.preventDefault(); 
 
                 if (currentExpectedItem === '\n') {
-                    // Check if any text was typed before hitting Enter for a newline
                     if (typedText.length > 0) {
                         errors.incorrectChars += typedText.length; 
                         totalTypedChars += typedText.length;
@@ -1472,7 +1590,6 @@
                         endTest();
                     }
                 } else {
-                    // If Enter is pressed but we are NOT expecting a newline, it's an error
                     errors.incorrectEnter++; 
                     totalTypedChars++; 
                 }
@@ -1489,7 +1606,6 @@
             settingsOverlay.classList.add('show');
             resultModal.classList.remove('show'); 
             mainContent.classList.add('content-hidden'); 
-            // Reset inputs in settings modal to current values
             testDurationSelect.value = defaultTestDuration / 60;
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
@@ -1505,7 +1621,6 @@
         settingsButton.addEventListener('click', () => {
             settingsOverlay.classList.add('show');
             mainContent.classList.add('content-hidden'); 
-            // Reset inputs in settings modal to current values
             testDurationSelect.value = defaultTestDuration / 60;
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
@@ -1543,7 +1658,6 @@
             resultModal.classList.remove('show');
             settingsOverlay.classList.add('show');
             mainContent.classList.add('content-hidden'); 
-            // Reset inputs in settings modal to current values
             testDurationSelect.value = defaultTestDuration / 60;
             targetWpmInput.value = userTargetWPM || '';
             targetAccuracyInput.value = userTargetAccuracy || '';
@@ -1556,7 +1670,6 @@
             }
         });
 
-        // Event listener for Story Type dropdown to show/hide custom story area
         storyTypeSelect.addEventListener('change', () => {
             if (storyTypeSelect.value === 'user-custom') {
                 customStoryArea.style.display = 'block';
@@ -1565,18 +1678,17 @@
             }
         });
 
-        // Event listener for "Add Story from Reedsy" button
         addStoryLinkButton.addEventListener('click', () => {
             window.open('https://blog.reedsy.com/short-stories/', '_blank');
         });
 
-        // Initial setup on page load
         document.addEventListener('DOMContentLoaded', () => {
             settingsOverlay.classList.add('show');
             mainContent.classList.add('content-hidden');
             countdownDisplay.textContent = formatTime(defaultTestDuration); 
             customStoryArea.style.display = 'none';
-            updateProgressBar(); // Initialize progress bar on load
+            // Initialize all progress bars to their starting state
+            updateAllProgressBars(); 
         });
 
     </script>
