@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Check if the page is loaded inside an iframe
+        if (window.self !== window.top) {
+            // If inside an iframe, force a desktop-like viewport width
+            // This will make the content inside the iframe render as if on a desktop
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            if (viewportMeta) {
+                // You can experiment with different fixed widths (e.g., 992px, 1024px)
+                // 992px is a common breakpoint for desktop views in many responsive frameworks
+                viewportMeta.setAttribute('content', 'width=1200, initial-scale=0.8'); 
+                // You might need to adjust initial-scale based on your design and desired zoom
+            }
+        }
+    </script>
     <title>Advanced English Typing Test for Govt. Jobs</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
