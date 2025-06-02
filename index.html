@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced English Typing Test for Govt. Jobs</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght=400;700&family=Source+Code+Pro:wght=400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Basic Reset & Font Imports */
         * {
@@ -102,6 +102,24 @@
         /* New: KDPH display style */
         .kdph-item p {
             color: #8bc34a; /* Light green for KDPH */
+        }
+
+        /* Progress Bar Styles */
+        .progress-bar-container {
+            width: 100%;
+            height: 15px; /* Height of the bar */
+            background-color: #e0e0e0; /* Grey background for empty part */
+            border-radius: 8px; /* Rounded corners */
+            margin-bottom: 20px; /* Space between bar and test area */
+            overflow: hidden; /* Ensure inner bar stays within rounded corners */
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%; /* Initial width */
+            background-color: #e91e63; /* Pink fill color, similar to your button */
+            border-radius: 8px; /* Match container corners */
+            transition: width 0.3s ease-out; /* Smooth transition for width change */
         }
 
 
@@ -697,6 +715,10 @@
             </div>
         </div>
 
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="live-progress-bar-fill"></div>
+        </div>
+
         <div class="test-area" id="test-area">
             </div>
 
@@ -710,6 +732,8 @@
         <div class="result-modal" id="result-modal">
             <div class="modal-content">
                 <h2>Test Results</h2>
+                <div class="progress-bar-container" style="margin-bottom: 25px;">
+                    <div class="progress-bar-fill" id="final-progress-bar-fill" style="background-color: #4CAF50;"></div> </div>
                 <div class="stats">
                     <div class="stat-item">
                         <h3>Final Speed (WPM)</h3>
@@ -824,6 +848,11 @@
         const modalRestartButton = document.getElementById('modal-restart-button');
         const modalSettingsButton = document.getElementById('modal-settings-button');
 
+        // New Progress Bar Elements
+        const liveProgressBarFill = document.getElementById('live-progress-bar-fill');
+        const finalProgressBarFill = document.getElementById('final-progress-bar-fill');
+
+
         // Settings Overlay Elements
         const settingsOverlay = document.getElementById('settings-overlay');
         const testDurationSelect = document.getElementById('test-duration');
@@ -861,7 +890,8 @@
         
         let correctChars = 0; // Correct characters typed (for WPM/CPM/KDPH)
         let totalTypedChars = 0; // All characters typed by user (correct + incorrect + extra)
-        let totalExpectedCharsTyped = 0; // Characters from the expected text that were correctly or incorrectly attempted
+        let totalExpectedCharsInTest = 0; // Total characters in the entire test passage
+
 
         // Detailed Error Counts
         let errors = {
@@ -891,6 +921,7 @@
         async function generateAndRenderTestWords() {
             testWords = []; 
             testArea.innerHTML = ''; 
+            totalExpectedCharsInTest = 0; // Reset for new test
 
             let textToType = "";
 
@@ -922,17 +953,18 @@
                 paragraphDiv.classList.add('paragraph');
 
                 // Split words in a paragraph by one or more spaces
-                // Use a regex to also capture trailing spaces for words, but split by space to get words
-                const wordsWithSpaces = paragraphText.match(/\S+\s*|\s+/g) || []; // Matches words and spaces
+                const wordsWithSpaces = paragraphText.match(/\S+\s*|\s+/g) || []; 
                 
-                wordsWithSpaces.forEach((item, itemIdxInPara) => {
-                    if (item.trim() === '') { // It's just a space or multiple spaces
-                        // We don't add standalone spaces to testWords, space is handled by logic between words
-                        // The visual word spans will naturally handle spacing.
-                    } else { // It's a word (potentially with trailing spaces)
-                        // Treat the actual word (without trailing spaces) as the "expected" word
+                wordsWithSpaces.forEach((item) => {
+                    if (item.trim() === '') { 
+                        // It's just a space or multiple spaces, we don't add standalone spaces to testWords
+                        // These will be handled by trailing spaces on words, or implicit spacing.
+                        // We will count them towards totalExpectedCharsInTest.
+                        totalExpectedCharsInTest += item.length;
+                    } else { 
                         const actualWord = item.trim(); 
                         testWords.push(actualWord); 
+                        totalExpectedCharsInTest += actualWord.length;
 
                         const wordSpan = document.createElement('span');
                         wordSpan.classList.add('word');
@@ -943,7 +975,6 @@
                             wordSpan.appendChild(charSpan);
                         });
                         
-                        // Add trailing spaces as untyped characters to the word span for accurate visual representation
                         const trailingSpaces = item.substring(actualWord.length);
                         for (let i = 0; i < trailingSpaces.length; i++) {
                             const charSpan = document.createElement('span');
@@ -951,6 +982,7 @@
                             charSpan.classList.add('untyped');
                             wordSpan.appendChild(charSpan);
                         }
+                        totalExpectedCharsInTest += trailingSpaces.length; // Count trailing spaces for total expected chars
                         
                         paragraphDiv.appendChild(wordSpan);
                     }
@@ -961,7 +993,8 @@
                     newlineMarker.classList.add('newline-marker');
                     paragraphDiv.appendChild(newlineMarker);
                     
-                    testWords.push('\n'); // Special indicator for newline in testWords array
+                    testWords.push('\n'); 
+                    totalExpectedCharsInTest++; // Count the newline character for total expected chars
                 }
                 
                 testArea.appendChild(paragraphDiv);
@@ -969,6 +1002,7 @@
             
             highlightCurrentWord();
             adjustTestAreaScroll();
+            updateProgressBar(); // Initialize progress bar
             return true; 
         }
 
@@ -1039,6 +1073,28 @@
             }
         }
 
+        // New function to update the progress bar
+        function updateProgressBar() {
+            let progressPercentage = 0;
+            if (totalExpectedCharsInTest > 0) {
+                // Progress based on characters that have been correctly evaluated (typed or attempted)
+                // This means: sum of lengths of words completely processed + chars in current word.
+                let processedChars = 0;
+                for (let i = 0; i < wordIndex; i++) {
+                    const item = testWords[i];
+                    processedChars += (item === '\n' ? 1 : item.length + 1); // Add word length + space, or 1 for newline
+                }
+                // Add current typed character count if current word is not a newline
+                if (testWords[wordIndex] !== '\n') {
+                    processedChars += charIndex;
+                }
+                
+                progressPercentage = (processedChars / totalExpectedCharsInTest) * 100;
+            }
+            liveProgressBarFill.style.width = `${progressPercentage}%`;
+        }
+
+
         function updateStats() {
             const timeElapsed = (defaultTestDuration - timeLeft);
             if (!isTestRunning || timeElapsed === 0) {
@@ -1047,39 +1103,19 @@
                 errorsDisplay.textContent = errors.incorrectChars + errors.missedChars + errors.extraChars + errors.skippedWords + errors.extraWords + errors.incorrectEnter + errors.incorrectSpace;
                 cpmDisplay.textContent = 0;
                 kdphDisplay.textContent = 0;
+                updateProgressBar(); // Keep progress bar updated even if stats are 0
                 return; 
             }
 
             const minutesElapsed = timeElapsed / 60;
             const hoursElapsed = timeElapsed / 3600;
 
-            // WPM calculation: (Correct Words / Time in Minutes)
-            // A "word" is often defined as 5 characters including spaces.
-            const grossWPM = (correctChars / 5) / minutesElapsed;
-            
-            // Calculate penalty:
-            // For Govt Jobs, penalties can vary greatly. A common rule is:
-            // 1 full mistake = 1 word penalty. A full mistake can be 5 half mistakes.
-            // Here, we'll simplify and count every incorrect key depression as 1/5th of a word penalty.
-            // Or, more accurately, every error (incorrect char, missed char, extra char, etc.) contributes to deduction.
-            // Let's use a simple common rule for now: 5 characters (including space) per word.
-            // Errors: incorrectChars + missedChars + extraChars + (skippedWords * 5) + (extraWords * 5) + (incorrectEnter * 1) + (incorrectSpace * 1)
-            // A very common penalty rule: 5 incorrect characters = 1 WPM deduction.
-            // Let's simplify and make all errors count towards `incorrectChars` for accuracy, and `WPM` is based on net correct characters.
+            const totalCalculatedErrors = errors.incorrectChars + errors.missedChars + errors.extraChars + 
+                                        (errors.skippedWords * 5) + (errors.extraWords * 5) + errors.incorrectEnter + errors.incorrectSpace;
 
-            // The net WPM is based on (correct keystrokes - errors) / 5 / time
-            // For now, let's keep it based on `correctChars` and `typedCharsOverall` for WPM/Accuracy
-            // and detail error types in modal.
-            
-            // Raw WPM: All attempted keystrokes / 5 / minutes
-            const rawWPM = (totalTypedChars / 5) / minutesElapsed;
-            
+
             // Net WPM: (Correct Characters - Total Errors) / 5 / minutes
-            // This is a common way to calculate net WPM in some tests.
-            const totalErrors = errors.incorrectChars + errors.missedChars + errors.extraChars + 
-                              (errors.skippedWords * 5) + (errors.extraWords * 5) + errors.incorrectEnter + errors.incorrectSpace;
-
-            const netWPM = ((correctChars - totalErrors) / 5) / minutesElapsed;
+            const netWPM = ((correctChars - totalCalculatedErrors) / 5) / minutesElapsed;
             wpmDisplay.textContent = Math.max(0, Math.round(netWPM)); // WPM can't be negative
 
             // CPM calculation: Total Correct Characters / (Time in Minutes)
@@ -1093,13 +1129,13 @@
 
 
             // Accuracy calculation: (Correctly typed chars / Total chars attempted) * 100
-            // totalExpectedCharsTyped is the sum of characters from expected text that user has either correctly typed or incorrectly attempted to type
-            // totalTypedChars is all chars the user typed, including extra chars beyond expected word length.
             const currentAccuracy = totalTypedChars === 0 ? 0 : Math.round((correctChars / totalTypedChars) * 100);
             accuracyDisplay.textContent = isNaN(currentAccuracy) ? 0 : currentAccuracy;
             
             // Total Errors for display
-            errorsDisplay.textContent = totalErrors;
+            errorsDisplay.textContent = totalCalculatedErrors;
+
+            updateProgressBar(); // Update progress bar with live typing progress
         }
 
         function startTimer() {
@@ -1190,6 +1226,14 @@
             finalKdphDisplay.className = 'result-value-kdph';
 
 
+            // Update Final Progress Bar based on correct completion
+            let finalProgressPercentage = 0;
+            if (totalExpectedCharsInTest > 0) {
+                finalProgressPercentage = (correctChars / totalExpectedCharsInTest) * 100;
+            }
+            finalProgressBarFill.style.width = `${finalProgressPercentage}%`;
+
+
             // Check and update target status
             if (userTargetWPM !== null && !isNaN(userTargetWPM)) {
                 if (parseFloat(finalWpmDisplay.textContent) >= userTargetWPM) {
@@ -1231,7 +1275,7 @@
             charIndex = 0; 
             correctChars = 0;
             totalTypedChars = 0;
-            totalExpectedCharsTyped = 0;
+            totalExpectedCharsInTest = 0; // Reset
             errors = { // Reset all error counts
                 incorrectChars: 0,
                 missedChars: 0,
@@ -1256,7 +1300,12 @@
             accuracyDisplay.textContent = '0';
             errorsDisplay.textContent = '0';
             cpmDisplay.textContent = '0'; 
-            kdphDisplay.textContent = '0'; // Reset KDPH display
+            kdphDisplay.textContent = '0'; 
+            
+            // Reset progress bars visually
+            liveProgressBarFill.style.width = '0%';
+            finalProgressBarFill.style.width = '0%';
+
 
             restartButton.disabled = false; 
             settingsButton.disabled = false;
@@ -1307,20 +1356,18 @@
 
             // Update char rendering within the current word
             // Calculate real-time feedback and update `correctChars` and `totalTypedChars` for live stats
-            // We'll re-evaluate `incorrectChars` at word completion (space/enter) for accuracy penalty.
             let currentWordCorrectChars = 0;
-            let currentWordTypedChars = 0;
-
+            
             // Handle expected characters
             for (let i = 0; i < currentWordExpected.length; i++) {
                 const charExpected = currentWordExpected[i];
                 const typedChar = typedText[i];
                 const charSpan = charSpans[i];
 
-                if (charSpan) { // Character span exists for expected character
+                if (charSpan) { 
                     if (typedChar === undefined) {
                         charSpan.classList.add('untyped');
-                    } else if (typedChar === charExpected) { // Case-sensitive comparison
+                    } else if (typedChar === charExpected) { 
                         charSpan.classList.add('correct');
                         currentWordCorrectChars++;
                     } else {
@@ -1330,10 +1377,8 @@
             }
 
             // Handle extra characters typed (beyond the current word's length)
-            // First, remove any existing extra spans
             currentWordSpan.querySelectorAll('.extra').forEach(el => el.remove());
 
-            // Then, create and add new extra chars
             if (typedText.length > currentWordExpected.length) {
                 for (let i = currentWordExpected.length; i < typedText.length; i++) {
                     const extraSpan = document.createElement('span');
@@ -1343,10 +1388,9 @@
                 }
             }
             
-            // This `charIndex` is just for visual feedback of typed characters within the current word
             charIndex = typedText.length;
             
-            updateStats();
+            updateStats(); // Update stats and progress bar
         });
 
 
@@ -1365,42 +1409,39 @@
                 // If currently at a newline marker, hitting space is an error
                 if (currentExpectedItem === '\n') {
                     errors.incorrectSpace++;
-                    totalTypedChars++; // Count the incorrect space as a typed char
+                    totalTypedChars++; 
                     typingInput.value = ''; 
                     updateStats();
                     return; 
                 }
                 
                 const currentWordExpected = currentExpectedItem;
-                let wordTyped = typedText; // Do not trim here, space matters for final word comparison logic
+                let wordTyped = typedText; 
                 
-                // Compare word for accurate error calculation at word completion
-                let wordCorrectChars = 0;
+                let wordCorrectCharsCount = 0;
                 
                 for (let i = 0; i < Math.max(currentWordExpected.length, wordTyped.length); i++) {
                     const expectedChar = currentWordExpected[i];
                     const typedChar = wordTyped[i];
 
-                    if (typedChar === undefined) { // Missed character
+                    if (typedChar === undefined) { 
                         errors.missedChars++;
-                    } else if (expectedChar === undefined) { // Extra character typed by user
+                    } else if (expectedChar === undefined) { 
                         errors.extraChars++;
-                    } else if (typedChar !== expectedChar) { // Incorrect character
+                    } else if (typedChar !== expectedChar) { 
                         errors.incorrectChars++;
-                    } else { // Correct character
-                        wordCorrectChars++;
+                    } else { 
+                        wordCorrectCharsCount++;
                     }
                 }
 
-                correctChars += wordCorrectChars;
-                totalTypedChars += wordTyped.length; // Characters actually typed by user for this word
+                correctChars += wordCorrectCharsCount;
+                totalTypedChars += wordTyped.length; 
                 totalTypedChars++; // Account for the space itself
-
-                totalExpectedCharsTyped += currentWordExpected.length; // Length of the expected word
 
                 wordIndex++; 
                 typingInput.value = ''; 
-                charIndex = 0; // Reset charIndex for next word
+                charIndex = 0; 
                 highlightCurrentWord(); 
 
                 if (wordIndex >= testWords.length) { 
@@ -1414,13 +1455,13 @@
                 if (currentExpectedItem === '\n') {
                     // Check if any text was typed before hitting Enter for a newline
                     if (typedText.length > 0) {
-                        errors.incorrectChars += typedText.length; // Count these as incorrect characters
+                        errors.incorrectChars += typedText.length; 
                         totalTypedChars += typedText.length;
                     }
                     
-                    correctChars++; // Correctly handled newline counts as one correct stroke
-                    totalTypedChars++; // Count the Enter key as one typed character
-                    totalExpectedCharsTyped++; // Count the expected newline as one expected char
+                    correctChars++; 
+                    totalTypedChars++; 
+                    
 
                     wordIndex++; 
                     typingInput.value = ''; 
@@ -1433,19 +1474,13 @@
                 } else {
                     // If Enter is pressed but we are NOT expecting a newline, it's an error
                     errors.incorrectEnter++; 
-                    totalTypedChars++; // Count this incorrect Enter as a typed char
+                    totalTypedChars++; 
                 }
                 updateStats();
             } else if (e.key === 'Backspace') {
-                // Backspace logic is primarily handled by the 'input' event for visual feedback.
-                // We don't adjust error counts on backspace directly, as those are calculated
-                // when a word is completed (space/enter).
-                // If typedText length is 0, we're at the start of the current word
                 if (charIndex > 0) {
                     charIndex--;
                 }
-                // No need to adjust `correctChars` or `totalTypedChars` here, as the `input` event
-                // will re-evaluate the current word's state based on the new `typingInput.value`.
             }
         });
 
@@ -1541,6 +1576,7 @@
             mainContent.classList.add('content-hidden');
             countdownDisplay.textContent = formatTime(defaultTestDuration); 
             customStoryArea.style.display = 'none';
+            updateProgressBar(); // Initialize progress bar on load
         });
 
     </script>
